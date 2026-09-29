@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ErlebnisRadar unterstützen</title>
+<meta name="description" content="ErlebnisRadar wird von einer Person entwickelt und betrieben. Hilf mit, den Radar am Laufen zu halten." />
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --indigo-950:#0d0b2e;
+    --indigo-900:#151140;
+    --indigo-800:#1e1a56;
+    --indigo-600:#4F46E5;
+    --indigo-400:#8b85f0;
+    --teal-500:#14B8A6;
+    --teal-300:#7ff0e0;
+    --ink:#eef0ff;
+    --ink-dim:#b7b4e0;
+    --ink-faint:#8783b8;
+    --line:rgba(255,255,255,0.10);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(79,70,229,0.35), transparent 60%),
+      linear-gradient(180deg, var(--indigo-950) 0%, var(--indigo-900) 55%, #0a0824 100%);
+    color:var(--ink);
+    font-family:'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+  h1,h2{
+    font-family:'Space Grotesk', 'Inter', sans-serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    margin:0;
+  }
+  a{color:var(--teal-300);}
+  .mono{font-family:'JetBrains Mono', ui-monospace, monospace;}
+
+  /* ── Hero ─────────────────────────────────────────────────────── */
+  .hero{
+    position:relative;
+    padding:76px 0 64px;
+    overflow:hidden;
+  }
+  .radar{
+    position:relative;
+    width:240px; height:240px;
+    margin:0 auto 40px;
+  }
+  .radar svg{width:100%; height:100%; display:block; overflow:visible;}
+  .radar .ring{fill:none; stroke:rgba(139,133,240,0.28); stroke-width:1.5;}
+  .radar .sweep-wrap{
+    transform-origin:120px 120px;
+    animation:spin 4.5s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .radar .sweep-wrap{animation:none;}
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .radar .blip{fill:var(--teal-300);}
+  .radar .blip-glow{fill:var(--teal-300); opacity:0.35;}
+  .radar .pin-body{fill:#fff;}
+  .radar .pin-core{fill:var(--teal-500);}
+
+  .eyebrow-mark{
+    text-align:center;
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    letter-spacing:0.06em;
+    color:var(--teal-300);
+    margin-bottom:18px;
+  }
+  h1.headline{
+    font-size:clamp(28px, 5vw, 42px);
+    text-align:center;
+    line-height:1.18;
+    max-width:620px;
+    margin:0 auto;
+    color:#fff;
+  }
+  .sub{
+    text-align:center;
+    max-width:500px;
+    margin:22px auto 0;
+    color:var(--ink-dim);
+    font-size:16.5px;
+  }
+
+  .stats{
+    display:flex;
+    justify-content:center;
+    gap:40px;
+    margin-top:44px;
+    flex-wrap:wrap;
+  }
+  .stat{text-align:center;}
+  .stat .n{
+    font-family:'JetBrains Mono', monospace;
+    font-size:26px;
+    color:#fff;
+    font-weight:500;
+  }
+  .stat .l{font-size:12.5px; color:var(--ink-faint); margin-top:4px;}
+
+  .cta-row{
+    display:flex; justify-content:center; margin-top:40px;
+  }
+  .cta-row a{
+    display:inline-block;
+    background:var(--teal-500);
+    color:#06231f;
+    text-decoration:none;
+    font-weight:600;
+    padding:13px 26px;
+    border-radius:999px;
+    font-size:15px;
+  }
+
+  /* ── Sections ─────────────────────────────────────────────────── */
+  section{padding:56px 0; border-top:1px solid var(--line);}
+  h2.section-title{
+    font-size:22px;
+    color:#fff;
+    margin-bottom:8px;
+  }
+  .section-intro{color:var(--ink-dim); font-size:15px; max-width:520px; margin:0 0 32px;}
+
+  /* Ledger — costs list, deliberately log-style, not a card grid */
+  .ledger{border-top:1px solid var(--line);}
+  .ledger-row{
+    display:grid;
+    grid-template-columns:110px 1fr;
+    gap:20px;
+    padding:20px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .ledger-row .tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12.5px;
+    color:var(--teal-300);
+    padding-top:2px;
+  }
+  .ledger-row .desc h3{
+    margin:0 0 6px;
+    font-size:16px;
+    font-weight:600;
+    color:#fff;
+    font-family:'Inter', sans-serif;
+  }
+  .ledger-row .desc p{margin:0; color:var(--ink-dim); font-size:14.5px;}
+
+  /* Support options */
+  .options{display:flex; flex-direction:column; gap:14px;}
+  .option{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    background:var(--indigo-800);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px 24px;
+  }
+  .option .name{font-weight:600; color:#fff; font-size:15.5px;}
+  .option .note{color:var(--ink-faint); font-size:13px; margin-top:3px;}
+  .option a.btn{
+    flex-shrink:0;
+    background:var(--indigo-600);
+    color:#fff;
+    text-decoration:none;
+    font-weight:600;
+    font-size:14px;
+    padding:10px 18px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
+  .option.muted a.btn{background:transparent; border:1px solid var(--indigo-400); color:var(--indigo-400);}
+
+  /* Personal note */
+  .note-block{
+    max-width:560px;
+  }
+  .note-block p{color:var(--ink-dim); font-size:15.5px;}
+  .signature{
+    margin-top:20px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    color:var(--ink-faint);
+  }
+
+  footer{
+    padding:40px 0 56px;
+    border-top:1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:16px;
+    font-size:13px;
+    color:var(--ink-faint);
+  }
+  footer a{color:var(--ink-dim); text-decoration:none;}
+  footer a:hover{color:var(--teal-300);}
+  .foot-links{display:flex; gap:18px; flex-wrap:wrap;}
+
+  @media (max-width: 560px){
+    .ledger-row{grid-template-columns:1fr;}
+    .option{flex-direction:column; align-items:flex-start;}
+    .option a.btn{align-self:stretch; text-align:center;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="radar">
+      <svg viewBox="0 0 240 240">
+        <circle class="ring" cx="120" cy="120" r="46"/>
+        <circle class="ring" cx="120" cy="120" r="78"/>
+        <circle class="ring" cx="120" cy="120" r="110"/>
+
+        <g class="blips">
+          <circle class="blip-glow" cx="185" cy="95" r="10"/>
+          <circle class="blip" cx="185" cy="95" r="4"/>
+          <circle class="blip-glow" cx="55" cy="130" r="9"/>
+          <circle class="blip" cx="55" cy="130" r="3.5"/>
+          <circle class="blip-glow" cx="190" cy="170" r="8"/>
+          <circle class="blip" cx="190" cy="170" r="3.5"/>
+        </g>
+
+        <g class="sweep-wrap">
+          <defs>
+            <radialGradient id="sweepGrad" cx="0" cy="0" r="1" gradientTransform="translate(120 120) rotate(45) scale(110)">
+              <stop offset="0%" stop-color="#7ff0e0" stop-opacity="0.55"/>
+              <stop offset="100%" stop-color="#7ff0e0" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <path d="M 120 120 L 120 10 A 110 110 0 0 1 198 48 Z" fill="url(#sweepGrad)"/>
+        </g>
+
+        <!-- Ortsmarke, wie im App-Icon -->
+        <g>
+          <path class="pin-body" d="M120 78
+                   a34 34 0 1 0 -34 34
+                   c0 7 12 24 34 42
+                   c22 -18 34 -35 34 -42
+                   a34 34 0 0 0 -34 -34 Z"/>
+          <circle class="pin-core" cx="120" cy="112" r="14"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="eyebrow-mark">erlebnisradar.app</div>
+    <h1 class="headline">Der Radar läuft, seit jemand ihn bezahlt.</h1>
+    <p class="sub">
+      ErlebnisRadar durchsucht jede Nacht mehrere regionale Datenquellen nach
+      Veranstaltungen in Ostwestfalen, im Osnabrücker Land und im Mühlenkreis
+      Minden-Lübbecke. Das kostet Datenzugänge, Serverzeit und Karten­aufrufe —
+      und die Zeit einer einzelnen Person, die die Daten von Hand sauber hält.
+    </p>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="n">14.000+</div>
+        <div class="l">erfasste Events</div>
+      </div>
+      <div class="stat">
+        <div class="n">900+</div>
+        <div class="l">Orte in der Region</div>
+      </div>
+      <div class="stat">
+        <div class="n">1</div>
+        <div class="l">Person dahinter</div>
+      </div>
+    </div>
+
+    <div class="cta-row">
+      <a href="#unterstuetzen">Unterstützen</a>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="section-title">Wofür das Geld tatsächlich gebraucht wird</h2>
+    <p class="section-intro">Keine Investoren, kein Werbenetzwerk. Nur die laufenden Kosten, damit der Radar weitersucht.</p>
+
+    <div class="ledger">
+      <div class="ledger-row">
+        <div class="tag">01 · DATEN</div>
+        <div class="desc">
+          <h3>Datenzugänge &amp; Lizenzen</h3>
+          <p>Zugriff auf regionale Veranstaltungsdatenbanken (NRW, Niedersachsen, Mühlenkreis) und überregionale Ticketing-Anbieter.</p>
+        </div>
+      </div>
+      <div class="ledger-row">
+        <div class="tag">02 · SERVER</div>
+        <div class="desc">
+          <h3>Server &amp; Datenbank</h3>
+          <p>Die Infrastruktur, die jede Suche, jeden Filter und jedes Bild an dein Gerät ausliefert.</p>
+        </div>
+      </div>
+      <div class="ledger-row">
+        <div class="tag">03 · KARTE</div>
+        <div class="desc">
+          <h3>Karten &amp; Standort</h3>
+          <p>Kartenansicht und Umkreis-Suche laufen über kostenpflichtige Kartendienste — pro Abfrage.</p>
+        </div>
+      </div>
+      <div class="ledger-row">
+        <div class="tag">04 · ZEIT</div>
+        <div class="desc">
+          <h3>Kuratierung</h3>
+          <p>Falsch einsortierte Events, doppelte Termine, fehlende Orte — das prüft und korrigiert aktuell ein Mensch von Hand.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="unterstuetzen">
+    <h2 class="section-title">So kannst du helfen</h2>
+    <p class="section-intro">Jede Option führt dich zu einem externen Anbieter weiter. Auf dieser Seite selbst wird nichts gespeichert oder getrackt.</p>
+
+    <div class="options">
+      <!-- 🔴 TODO: echten PayPal.me-Link eintragen, z.B. https://paypal.me/DeinName -->
+      <div class="option">
+        <div>
+          <div class="name">Einmalig über PayPal</div>
+          <div class="note">Ein Betrag deiner Wahl, ohne Konto nötig</div>
+        </div>
+        <a class="btn" href="#" data-todo="PayPal.me-Link einsetzen">Mit PayPal unterstützen</a>
+      </div>
+
+      <!-- 🔴 TODO: echten Ko-fi- oder Buy-Me-a-Coffee-Link eintragen -->
+      <div class="option">
+        <div>
+          <div class="name">Monatlich auf Ko-fi</div>
+          <div class="note">Regelmäßige, kleine Unterstützung</div>
+        </div>
+        <a class="btn" href="#" data-todo="Ko-fi-Link einsetzen">Auf Ko-fi unterstützen</a>
+      </div>
+
+      <!-- Optional: Banküberweisung ohne Gebühren für den Anbieter.
+           IBAN hier NIEMALS als Text/HTML einfügen, sondern nur nach
+           Rückfrage per E-Mail herausgeben, um Missbrauch zu vermeiden. -->
+      <div class="option muted">
+        <div>
+          <div class="name">Per Überweisung</div>
+          <div class="note">Ohne Gebühren für den Anbieter — auf Anfrage per Mail</div>
+        </div>
+        <a class="btn" href="mailto:info@sasuware.de?subject=Unterstützung%20ErlebnisRadar">Kontakt aufnehmen</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="note-block">
+      <h2 class="section-title">Wer steckt dahinter</h2>
+      <p>
+        ErlebnisRadar entsteht in der Freizeit einer einzelnen Person aus der
+        Region. Kein Unternehmen, kein Team im Hintergrund — nur der Anspruch,
+        dass jeder in Minden, Bielefeld, Osnabrück und Umgebung weiß, was am
+        Wochenende los ist. Jede Unterstützung, egal wie klein, hält das
+        Projekt kostenlos für alle, die die App nutzen.
+      </p>
+      <div class="signature">— Sascha, Entwickler von ErlebnisRadar</div>
+    </div>
+  </section>
+
+  <footer>
+    <div>© 2026 ErlebnisRadar · Kein Tracking auf dieser Seite</div>
+    <div class="foot-links">
+      <a href="mailto:info@sasuware.de">Kontakt</a>
+      <a href="https://sascha22091994.github.io/ErlebnisRadar-legal/">Impressum &amp; Datenschutz</a>
+    </div>
+  </footer>
+</div>
+
+</body>
+</html>
