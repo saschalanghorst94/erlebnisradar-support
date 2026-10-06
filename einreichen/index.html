@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Event einreichen – ErlebnisRadar</title>
+<meta name="description" content="Trag dein Event kostenlos bei ErlebnisRadar ein – ohne App, direkt im Browser. Nach kurzer Prüfung erscheint es für alle in der Region." />
+<meta property="og:title" content="Event einreichen – ErlebnisRadar" />
+<meta property="og:description" content="Trag dein Event kostenlos ein – ohne App, direkt im Browser." />
+<meta name="robots" content="index,follow" />
+<link rel="icon" href="data:,">
+<!-- Schriften selbst gehostet (../fonts/), keine Verbindung zu Google Fonts.
+     Das Formular lädt keine Fremd-Skripte: Es spricht die öffentlichen
+     Schnittstellen von Firestore und Firebase Storage direkt an – dieselben
+     Regeln wie „Event einreichen“ in der App (firestore.rules: validPending,
+     storage.rules: Event_uploads). -->
+<link rel="preload" href="../fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/space-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  @font-face{font-family:'Inter';font-style:normal;font-weight:400 700;font-display:swap;src:url(../fonts/inter.woff2) format('woff2');}
+  @font-face{font-family:'Space Grotesk';font-style:normal;font-weight:500 700;font-display:swap;src:url(../fonts/space-grotesk.woff2) format('woff2');}
+  :root{
+    --indigo-950:#0d0b2e; --indigo-900:#151140; --indigo-800:#1e1a56; --indigo-600:#4F46E5; --indigo-400:#8b85f0;
+    --teal-500:#14B8A6; --teal-300:#7ff0e0; --ink:#eef0ff; --ink-dim:#c0bde8; --ink-faint:#8783b8;
+    --line:rgba(255,255,255,0.12); --field:rgba(255,255,255,0.06); --danger:#fda4af;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  body{
+    margin:0; color:var(--ink); font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif; line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    background:radial-gradient(ellipse 900px 520px at 50% -8%, rgba(79,70,229,0.38), transparent 62%),
+               linear-gradient(180deg,var(--indigo-950) 0%,var(--indigo-900) 55%,#0a0824 100%);
+    min-height:100vh;
+  }
+  .wrap{max-width:680px; margin:0 auto; padding:0 20px 60px;}
+  a{color:var(--teal-300);}
+  h1,h2{font-family:'Space Grotesk',sans-serif; font-weight:600; letter-spacing:-0.015em; color:#fff; margin:0;}
+  header.top{display:flex; align-items:center; justify-content:space-between; padding:22px 0;}
+  .brand{display:flex; align-items:center; gap:10px; color:#fff; text-decoration:none; font-family:'Space Grotesk'; font-weight:600; font-size:18px;}
+  .brand svg{width:30px; height:30px;}
+  .top a.back{font-size:14px; color:var(--ink-dim); text-decoration:none;}
+  .hero{padding:18px 0 8px;}
+  h1{font-size:clamp(28px,6vw,40px); line-height:1.12;}
+  .lead{color:var(--ink-dim); font-size:16.5px; margin:14px 0 0;}
+  .perks{display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; padding:0; list-style:none;}
+  .perks li{font-size:13.5px; padding:6px 12px; border-radius:999px; background:var(--indigo-800); border:1px solid var(--line); color:var(--ink-dim);}
+
+  /* App-Hinweis */
+  .apphint{margin:26px 0 8px; padding:16px 18px; border-radius:14px; display:flex; gap:14px; align-items:center;
+    background:linear-gradient(135deg, rgba(20,184,166,0.12), rgba(79,70,229,0.14)); border:1px solid rgba(20,184,166,0.32);}
+  .apphint .txt{font-size:14.5px; color:var(--ink-dim);}
+  .apphint b{color:#fff;}
+  .apphint .stores{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;}
+  .soon{font-size:12px; padding:4px 10px; border-radius:8px; background:#fff; color:#0d0b2e; font-weight:600;}
+
+  /* Formular */
+  form{margin-top:26px;}
+  fieldset{border:1px solid var(--line); border-radius:16px; padding:20px 18px 6px; margin:0 0 18px; background:rgba(30,26,86,0.45);}
+  legend{padding:0 8px; font-family:'Space Grotesk'; font-weight:600; font-size:17px; color:#fff;}
+  .row{margin-bottom:16px;}
+  .two{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  label{display:block; font-size:14px; font-weight:600; margin-bottom:6px; color:#fff;}
+  label .opt{font-weight:400; color:var(--ink-faint);}
+  input[type=text],input[type=email],input[type=tel],input[type=url],input[type=date],input[type=time],select,textarea{
+    width:100%; font:inherit; font-size:16px; color:var(--ink); background:var(--field);
+    border:1px solid var(--line); border-radius:10px; padding:11px 12px; outline:none; color-scheme:dark;
+  }
+  textarea{min-height:110px; resize:vertical;}
+  select option{background:var(--indigo-900); color:var(--ink);}
+  input:focus,select:focus,textarea:focus{border-color:var(--teal-500); box-shadow:0 0 0 3px rgba(20,184,166,0.25);}
+  .help{font-size:12.5px; color:var(--ink-faint); margin-top:5px;}
+  .check{display:flex; gap:10px; align-items:flex-start; font-weight:400; font-size:14.5px; color:var(--ink-dim);}
+  .check input{margin-top:4px; width:18px; height:18px; accent-color:var(--teal-500); flex:none;}
+  .err{color:var(--danger); font-size:13px; margin-top:5px; display:none;}
+  .invalid .err{display:block;}
+  .invalid input,.invalid select,.invalid textarea{border-color:var(--danger);}
+  .file{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+  .file img{width:72px; height:72px; object-fit:cover; border-radius:10px; border:1px solid var(--line); display:none;}
+  .hp{position:absolute; left:-10000px; width:1px; height:1px; overflow:hidden;}
+  button.submit{
+    width:100%; font:inherit; font-size:17px; font-weight:700; cursor:pointer;
+    padding:15px 20px; border:0; border-radius:14px; background:var(--teal-500); color:#06231f; margin-top:6px;
+  }
+  button.submit:disabled{opacity:.6; cursor:wait;}
+  .formerr{display:none; margin:14px 0 0; padding:12px 14px; border-radius:10px; background:rgba(244,63,94,0.12); border:1px solid rgba(244,63,94,0.4); color:#fecdd3; font-size:14.5px;}
+  .note{font-size:13px; color:var(--ink-faint); margin-top:14px;}
+
+  /* Danke */
+  .done{display:none; text-align:center; padding:40px 0 10px;}
+  .done .ok{width:72px; height:72px; border-radius:50%; margin:0 auto 18px; background:rgba(20,184,166,0.18); border:1px solid rgba(20,184,166,0.5); display:flex; align-items:center; justify-content:center; font-size:34px;}
+  .done p{color:var(--ink-dim);}
+  .btn2{display:inline-block; margin-top:14px; padding:12px 22px; border-radius:999px; border:1px solid var(--line); color:#fff; text-decoration:none; background:transparent; font:inherit; cursor:pointer;}
+
+  footer{margin-top:40px; padding-top:22px; border-top:1px solid var(--line); font-size:13px; color:var(--ink-faint); display:flex; gap:16px; flex-wrap:wrap; justify-content:space-between;}
+  footer a{color:var(--ink-dim); text-decoration:none;}
+  @media (max-width:520px){ .two{grid-template-columns:1fr;} .apphint{flex-direction:column; align-items:flex-start;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <a class="brand" href="../">
+    <svg viewBox="0 0 240 240" aria-hidden="true"><circle cx="120" cy="120" r="110" fill="none" stroke="rgba(139,133,240,0.5)" stroke-width="10"/><path fill="#fff" d="M120 56 a40 40 0 0 0 -40 40 c0 28 40 66 40 66 c0 0 40 -38 40 -66 a40 40 0 0 0 -40 -40 Z"/><circle cx="120" cy="96" r="16" fill="#14B8A6"/></svg>
+    ErlebnisRadar
+  </a>
+  <a class="back" href="../">← Zur Startseite</a>
+</header>
+
+<section id="formview">
+  <div class="hero">
+    <h1>Dein Event bei ErlebnisRadar</h1>
+    <p class="lead">Trag deine Veranstaltung kostenlos ein – direkt hier im Browser, ohne App.
+      Nach einer kurzen Prüfung erscheint sie für alle in der Region.</p>
+    <ul class="perks">
+      <li>✓ kostenlos</li><li>✓ ohne Anmeldung</li><li>✓ Foto vom Flyer reicht</li><li>✓ in wenigen Minuten</li>
+    </ul>
+  </div>
+
+  <div class="apphint">
+    <div class="txt"><b>Noch schneller mit der App:</b> In ErlebnisRadar unter Einstellungen → „Event einreichen“ – und du siehst gleich, was sonst so los ist.
+      <div class="stores"><span class="soon">Bald im App Store</span><span class="soon">Bald bei Google Play</span></div>
+    </div>
+  </div>
+
+  <form id="f" novalidate>
+    <fieldset>
+      <legend>Was?</legend>
+      <div class="row" data-req>
+        <label for="name">Name der Veranstaltung *</label>
+        <input id="name" type="text" maxlength="200" placeholder="z. B. Herbstfest am Marktplatz" autocomplete="off">
+        <div class="err">Bitte gib einen Namen ein.</div>
+      </div>
+      <div class="row" data-req>
+        <label for="category">Kategorie *</label>
+        <select id="category">
+          <option value="">Bitte wählen …</option>
+          <option value="konzert">Konzert</option>
+          <option value="party">Party &amp; Nachtleben</option>
+          <option value="stadtfest">Stadtfest</option>
+          <option value="markt">Markt</option>
+          <option value="food">Food</option>
+          <option value="familie">Familie</option>
+          <option value="sport">Sport</option>
+          <option value="theater_comedy">Kultur &amp; Bühne</option>
+          <option value="festival">Festival</option>
+          <option value="kunst">Kunst &amp; Ausstellung</option>
+          <option value="fuehrung">Führung</option>
+          <option value="natur">Natur &amp; Wandern</option>
+          <option value="workshop">Workshop &amp; Vortrag</option>
+          <option value="wellness">Wellness &amp; Entspannung</option>
+          <option value="kino">Kino</option>
+          <option value="treffen">Treffen &amp; Gruppen</option>
+          <option value="schuetzenfest">Schützenfest</option>
+          <option value="sonstiges">Sonstiges</option>
+        </select>
+        <div class="err">Bitte wähle eine Kategorie.</div>
+      </div>
+      <div class="row">
+        <label for="description">Beschreibung <span class="opt">(empfohlen)</span></label>
+        <textarea id="description" maxlength="5000" placeholder="Was erwartet die Besucher? Programm, Eintritt, Besonderheiten …"></textarea>
+      </div>
+      <div class="row">
+        <label for="highlights">Highlights <span class="opt">(optional)</span></label>
+        <input id="highlights" type="text" maxlength="500" placeholder="z. B. Live-Band, Feuerwerk, freier Eintritt">
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Wann?</legend>
+      <div class="two">
+        <div class="row" data-req>
+          <label for="startDate">Datum *</label>
+          <input id="startDate" type="date">
+          <div class="err">Bitte gib ein Datum ein.</div>
+        </div>
+        <div class="row">
+          <label for="startTime">Beginn <span class="opt">(optional)</span></label>
+          <input id="startTime" type="time">
+        </div>
+      </div>
+      <div class="row">
+        <label class="check"><input id="multiDay" type="checkbox"> Die Veranstaltung geht über mehrere Tage</label>
+      </div>
+      <div class="two" id="endRow" hidden>
+        <div class="row" id="endDateRow">
+          <label for="endDate">Letzter Tag *</label>
+          <input id="endDate" type="date">
+          <div class="err">Der letzte Tag muss am oder nach dem ersten Tag liegen.</div>
+        </div>
+        <div class="row">
+          <label for="endTime">Ende <span class="opt">(optional)</span></label>
+          <input id="endTime" type="time">
+        </div>
+      </div>
+      <div class="row" id="endTimeOnly">
+        <label for="endTime1">Ende <span class="opt">(optional)</span></label>
+        <input id="endTime1" type="time">
+        <div class="err">Das Ende muss nach dem Beginn liegen.</div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Wo?</legend>
+      <div class="row" data-req>
+        <label for="city">Ort *</label>
+        <input id="city" type="text" maxlength="100" placeholder="z. B. Rahden" autocomplete="address-level2">
+        <div class="err">Bitte gib den Ort ein.</div>
+      </div>
+      <div class="row" data-req>
+        <label for="address">Adresse *</label>
+        <input id="address" type="text" maxlength="300" placeholder="Straße und Hausnummer, ggf. Name der Location">
+        <div class="help">Daraus ermitteln wir die Position auf der Karte.</div>
+        <div class="err">Bitte gib die Adresse ein.</div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Bild &amp; Links</legend>
+      <div class="row">
+        <label for="image">Bild oder Flyer <span class="opt">(optional, max. 10 MB)</span></label>
+        <div class="file"><input id="image" type="file" accept="image/*"><img id="preview" alt="Vorschau"></div>
+        <div class="help">Bitte nur Bilder, an denen du die Rechte hast.</div>
+        <div class="err" id="imageErr">Das Bild ist zu groß oder kein Bild.</div>
+      </div>
+      <div class="two">
+        <div class="row">
+          <label for="website">Website <span class="opt">(optional)</span></label>
+          <input id="website" type="url" maxlength="300" placeholder="https://…">
+        </div>
+        <div class="row">
+          <label for="instagram">Instagram <span class="opt">(optional)</span></label>
+          <input id="instagram" type="text" maxlength="200" placeholder="@deinevent">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Kontakt für Rückfragen</legend>
+      <p class="help" style="margin:-4px 0 14px">Wird nicht veröffentlicht – nur falls wir zu deinem Event eine Frage haben.</p>
+      <div class="row">
+        <label for="contactName">Name <span class="opt">(optional)</span></label>
+        <input id="contactName" type="text" maxlength="200" autocomplete="name">
+      </div>
+      <div class="two">
+        <div class="row" data-req>
+          <label for="contactMail">E-Mail *</label>
+          <input id="contactMail" type="email" maxlength="200" autocomplete="email">
+          <div class="err">Bitte gib eine gültige E-Mail-Adresse ein.</div>
+        </div>
+        <div class="row">
+          <label for="contactPhone">Telefon <span class="opt">(optional)</span></label>
+          <input id="contactPhone" type="tel" maxlength="50" autocomplete="tel">
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Lockvogel gegen Bots: für Menschen unsichtbar -->
+    <div class="hp" aria-hidden="true">
+      <label for="company">Firma</label><input id="company" type="text" tabindex="-1" autocomplete="off">
+    </div>
+
+    <div class="row" id="consentRow">
+      <label class="check"><input id="consent" type="checkbox">
+        <span>Ich habe die <a href="https://legal.sasuware.de/#datenschutz" target="_blank" rel="noopener">Datenschutzerklärung</a> gelesen und bin einverstanden, dass meine Angaben zur Prüfung und Veröffentlichung des Events gespeichert werden.</span></label>
+      <div class="err">Bitte bestätige die Datenschutzerklärung.</div>
+    </div>
+
+    <button class="submit" id="send" type="submit">Event einreichen</button>
+    <div class="formerr" id="formerr"></div>
+    <p class="note">Wir prüfen jede Einreichung, bevor sie erscheint – meist innerhalb von 1–2 Tagen.</p>
+  </form>
+</section>
+
+<section class="done" id="doneview">
+  <div class="ok">✓</div>
+  <h1>Danke, dein Event ist eingereicht!</h1>
+  <p>Wir schauen es uns an und schalten es nach der Prüfung frei.</p>
+  <div class="apphint" style="text-align:left">
+    <div class="txt"><b>Hol dir ErlebnisRadar aufs Handy:</b> Dann siehst du dein Event – und alles andere, was in deiner Nähe los ist.
+      <div class="stores"><span class="soon">Bald im App Store</span><span class="soon">Bald bei Google Play</span></div>
+      <div style="margin-top:8px">Bis dahin: <a href="https://www.instagram.com/erlebnisradar_app/" rel="noopener">@erlebnisradar_app auf Instagram</a></div>
+    </div>
+  </div>
+  <button class="btn2" id="again" type="button">Weiteres Event einreichen</button>
+</section>
+
+<footer>
+  <div>© 2026 ErlebnisRadar · Kein Tracking auf dieser Seite</div>
+  <div style="display:flex;gap:16px;flex-wrap:wrap">
+    <a href="../">Startseite</a>
+    <a href="mailto:info@sasuware.de">Kontakt</a>
+    <a href="https://legal.sasuware.de/">Impressum &amp; Datenschutz</a>
+  </div>
+</footer>
+</div>
+
+<script>
+(() => {
+  const PROJECT = 'erlebnis-radar';
+  const BUCKET = 'erlebnis-radar.firebasestorage.app';
+  const FIRESTORE = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
+  const STORAGE = `https://firebasestorage.googleapis.com/v0/b/${BUCKET}/o`;
+  const MIN_FILL_MS = 4000;   // schneller füllt kein Mensch das Formular aus
+  const loadedAt = Date.now();
+
+  const $ = (id) => document.getElementById(id);
+  const val = (id) => $(id).value.trim();
+
+  // Mehrtägig: Felder umschalten.
+  $('multiDay').addEventListener('change', () => {
+    const on = $('multiDay').checked;
+    $('endRow').hidden = !on;
+    $('endTimeOnly').hidden = on;
+  });
+
+  // Bild: Vorschau + vor dem Hochladen verkleinern (spart Datenvolumen).
+  let imageBlob = null;
+  $('image').addEventListener('change', async () => {
+    const file = $('image').files[0];
+    imageBlob = null;
+    $('image').closest('.row').classList.remove('invalid');
+    $('preview').style.display = 'none';
+    if (!file) return;
+    if (!file.type.startsWith('image/') || file.size > 25 * 1024 * 1024) {
+      $('image').closest('.row').classList.add('invalid');
+      return;
+    }
+    try {
+      imageBlob = await shrink(file, 2000, 0.85);
+      $('preview').src = URL.createObjectURL(imageBlob);
+      $('preview').style.display = 'block';
+    } catch {
+      $('image').closest('.row').classList.add('invalid');
+    }
+  });
+
+  function shrink(file, maxSide, quality) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * scale);
+        c.height = Math.round(img.height * scale);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        c.toBlob((b) => (b && b.size < 10 * 1024 * 1024 ? resolve(b) : reject()), 'image/jpeg', quality);
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  function setInvalid(id, bad) {
+    const row = $(id).closest('.row');
+    row.classList.toggle('invalid', bad);
+    return bad;
+  }
+
+  // Datum + optionale Uhrzeit wie in der App:
+  // nur Beginn → Ende 23:59 am letzten Tag; keine Zeit → ganztägig (00:00).
+  function buildDates() {
+    const multi = $('multiDay').checked;
+    const sd = val('startDate'), st = val('startTime');
+    const ed = multi ? val('endDate') : sd;
+    const et = multi ? val('endTime') : val('endTime1');
+    const start = new Date(`${sd}T${st || '00:00'}:00`);
+    let end;
+    if (et) end = new Date(`${ed}T${et}:00`);
+    else if (st) end = new Date(`${ed}T23:59:00`);
+    else end = new Date(`${ed}T00:00:00`);
+    return { start, end, multi, sd, ed, st, et };
+  }
+
+  function validate() {
+    let bad = false;
+    for (const id of ['name', 'category', 'city', 'address', 'startDate']) bad = setInvalid(id, !val(id)) || bad;
+    const mail = val('contactMail');
+    bad = setInvalid('contactMail', !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail)) || bad;
+    if (val('startDate')) {
+      const d = buildDates();
+      if (d.multi) bad = setInvalid('endDate', !d.ed || d.ed < d.sd) || bad;
+      else setInvalid('endDate', false);
+      if (!d.multi && d.et && d.st && d.et <= d.st) bad = setInvalid('endTime1', true) || bad;
+      else setInvalid('endTime1', false);
+    }
+    $('consentRow').classList.toggle('invalid', !$('consent').checked);
+    if (!$('consent').checked) bad = true;
+    if ($('image').closest('.row').classList.contains('invalid')) bad = true;
+    return !bad;
+  }
+
+  async function uploadImage() {
+    if (!imageBlob) return '';
+    const name = `Event_uploads/${Date.now()}_web.jpg`;
+    const res = await fetch(`${STORAGE}?uploadType=media&name=${encodeURIComponent(name)}`, {
+      method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: imageBlob,
+    });
+    if (!res.ok) throw new Error('Bild-Upload fehlgeschlagen (' + res.status + ')');
+    const meta = await res.json();
+    const token = (meta.downloadTokens || '').split(',')[0];
+    return `${STORAGE}/${encodeURIComponent(name)}?alt=media&token=${token}`;
+  }
+
+  const str = (s) => ({ stringValue: s });
+  async function submitEvent(flyerUrl) {
+    const d = buildDates();
+    const city = val('city');
+    const fields = {
+      type: str('Event'), status: str('pending'), source: str('user'),
+      name: str(val('name')), category: str(val('category')),
+      city: str(city), location: str(city), address: str(val('address')),
+      description: str(val('description')), highlights: str(val('highlights')),
+      instagram: str(val('instagram')), website: str(val('website')),
+      contactName: str(val('contactName')), contactMail: str(val('contactMail')),
+      contactPhone: str(val('contactPhone')),
+      startDate: { timestampValue: d.start.toISOString() },
+      endDate: { timestampValue: d.end.toISOString() },
+      flyerUrl: str(flyerUrl),
+    };
+    // Eine Schreibanfrage mit Server-Zeitstempel für createdAt
+    // (die Regel verlangt createdAt == request.time).
+    const id = 'web_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    const body = { writes: [{
+      update: { name: `projects/${PROJECT}/databases/(default)/documents/pendingEvents/${id}`, fields },
+      updateTransforms: [{ fieldPath: 'createdAt', setToServerValue: 'REQUEST_TIME' }],
+      currentDocument: { exists: false },
+    }] };
+    const res = await fetch(`${FIRESTORE}:commit`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error(res.status === 403 ? 'Die Angaben wurden abgelehnt – bitte prüfe die Felder (zu lang?).' : 'Fehler beim Senden (' + res.status + ')');
+    }
+  }
+
+  $('f').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    $('formerr').style.display = 'none';
+    if (!validate()) {
+      const first = document.querySelector('.invalid');
+      if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    // Bots: Lockvogel ausgefüllt oder zu schnell → still „erfolgreich“.
+    if (val('company') || Date.now() - loadedAt < MIN_FILL_MS) { showDone(); return; }
+
+    $('send').disabled = true; $('send').textContent = 'Wird gesendet …';
+    try {
+      let flyerUrl = '';
+      let imageFailed = false;
+      try { flyerUrl = await uploadImage(); } catch { imageFailed = true; }
+      await submitEvent(flyerUrl);
+      showDone(imageFailed);
+    } catch (e) {
+      $('formerr').textContent = (e && e.message ? e.message : 'Unbekannter Fehler') +
+        ' Wenn es weiter nicht klappt, schreib uns an info@sasuware.de.';
+      $('formerr').style.display = 'block';
+    } finally {
+      $('send').disabled = false; $('send').textContent = 'Event einreichen';
+    }
+  });
+
+  function showDone(imageFailed) {
+    $('formview').style.display = 'none';
+    $('doneview').style.display = 'block';
+    if (imageFailed) {
+      const p = document.createElement('p');
+      p.textContent = 'Hinweis: Das Bild konnte nicht hochgeladen werden – das Event ist trotzdem angekommen.';
+      $('doneview').insertBefore(p, $('doneview').querySelector('.apphint'));
+    }
+    window.scrollTo({ top: 0 });
+  }
+
+  $('again').addEventListener('click', () => location.reload());
+})();
+</script>
+</body>
+</html>
