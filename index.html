@@ -51,7 +51,22 @@
     line-height:1.55;
     -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:800px; margin:0 auto; padding:0 24px;}
+  .wrap{max-width:800px; margin:0 auto; padding:0 24px; position:relative;}
+
+  /* ── Unterstützen-Hinweis oben rechts ───────────── */
+  a.top-support{
+    position:absolute; top:20px; right:24px;
+    display:inline-flex; align-items:center; gap:7px;
+    font-size:13.5px; font-weight:500; text-decoration:none;
+    color:var(--teal-300);
+    padding:7px 14px; border-radius:999px;
+    background:rgba(20,184,166,0.08);
+    border:1px solid rgba(20,184,166,0.35);
+    transition:background .15s ease, border-color .15s ease;
+  }
+  a.top-support:hover{background:rgba(20,184,166,0.16); border-color:rgba(20,184,166,0.6);}
+  a.top-support:focus-visible{outline:2px solid var(--teal-300); outline-offset:3px;}
+  a.top-support svg{width:14px; height:14px; flex-shrink:0;}
   h1,h2,h3{font-family:'Space Grotesk', sans-serif; font-weight:600; letter-spacing:-0.015em; margin:0; color:#fff;}
   a{color:var(--teal-300);}
 
@@ -133,7 +148,7 @@
   .promo h2{font-size:20px;}
   .promo p{color:var(--ink-dim); font-size:15px; margin:10px 0 0;}
 
-  /* ── Unterstützen ──────────────────────────────── */
+  /* ── Unterstützen ───────────────────────────────── */
   .support{
     background:linear-gradient(135deg, rgba(20,184,166,0.13), rgba(79,70,229,0.13));
     border:1px solid rgba(20,184,166,0.32);
@@ -172,11 +187,17 @@
     a.store{width:100%; max-width:280px;}
     .support{flex-direction:column; align-items:flex-start;}
     .support a.pp{align-self:stretch; text-align:center;}
+    a.top-support{top:14px; right:16px; font-size:13px; padding:6px 12px;}
   }
 </style>
 </head>
 <body>
 <div class="wrap">
+
+<a class="top-support" href="#unterstuetzen">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+  Unterstützen
+</a>
 
 <div class="hero">
   <div class="radar">
@@ -213,7 +234,7 @@
   </p>
 
   <div class="stores">
-    <!-- 🔴 Nach App-Store-Freigabe: href durch den echten App-Store-Link ersetzen-,
+    <!-- 🔴 Nach App-Store-Freigabe: href durch den echten App-Store-Link ersetzen,
          z. B. https://apps.apple.com/de/app/erlebnisradar/id6796624311 -->
     <a class="store" href="#" aria-label="ErlebnisRadar im App Store laden">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.6c-.02-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.78-3.32-1.8-1.41-.14-2.76.83-3.47.83-.72 0-1.82-.81-3-.79-1.54.02-2.96.9-3.76 2.27-1.6 2.78-.41 6.9 1.15 9.16.76 1.1 1.67 2.34 2.86 2.3 1.15-.05 1.58-.74 2.97-.74 1.38 0 1.78.74 2.99.72 1.24-.02 2.02-1.12 2.77-2.23.88-1.28 1.24-2.52 1.26-2.59-.03-.01-2.4-.92-2.42-3.67zM14.1 5.86c.63-.77 1.06-1.83.94-2.89-.91.04-2.02.61-2.67 1.37-.58.67-1.1 1.76-.96 2.8 1.02.08 2.06-.52 2.69-1.28z"/></svg>
@@ -303,21 +324,6 @@
   </p>
 </section>
 
-<section>
-  <div class="promo">
-    <h2>Du veranstaltest selbst etwas?</h2>
-    <p>
-      Trag dein Event direkt in der App ein, unter Einstellungen → „Event einreichen“.
-      Ein Foto vom Flyer reicht als Bild. Die Aufnahme ist kostenlos, nach
-      kurzer Prüfung ist es drin.
-    </p>
-    <p>
-      Clubs und Bars mit festen Partynächten melden sich am besten einmal
-      direkt: <a href="mailto:info@sasuware.de?subject=Location%20bei%20ErlebnisRadar">info@sasuware.de</a>
-    </p>
-  </div>
-</section>
-
 <section id="unterstuetzen">
   <div class="support">
     <div class="txt">
@@ -332,6 +338,21 @@
       <a class="pp" href="https://paypal.me/SaschaLanghorst" rel="noopener">Einen Kaffee spendieren</a>
       <div class="pp-note">via PayPal · Betrag frei wählbar</div>
     </div>
+  </div>
+</section>
+
+<section>
+  <div class="promo">
+    <h2>Du veranstaltest selbst etwas?</h2>
+    <p>
+      Trag dein Event direkt in der App ein, unter Einstellungen → „Event einreichen“.
+      Ein Foto vom Flyer reicht als Bild. Die Aufnahme ist kostenlos, nach
+      kurzer Prüfung ist es drin.
+    </p>
+    <p>
+      Clubs und Bars mit festen Partynächten melden sich am besten einmal
+      direkt: <a href="mailto:info@sasuware.de?subject=Location%20bei%20ErlebnisRadar">info@sasuware.de</a>
+    </p>
   </div>
 </section>
 
