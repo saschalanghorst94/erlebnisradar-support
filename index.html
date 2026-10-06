@@ -109,6 +109,26 @@
   a.store .small{display:block; font-size:11.5px; line-height:1.2; opacity:0.75;}
   a.store .big{display:block; font-family:'Space Grotesk', sans-serif; font-size:19px; font-weight:600; line-height:1.15;}
 
+  /* ── Spenden direkt unter den Store-Buttons ─────── */
+  .hero-support{
+    margin-top:26px;
+    display:flex; align-items:center; justify-content:center;
+    gap:14px; flex-wrap:wrap;
+    font-size:15px; color:var(--ink-dim);
+  }
+  a.hs{
+    display:inline-flex; align-items:center; gap:8px;
+    text-decoration:none; font-weight:600; font-size:15px;
+    color:var(--teal-300);
+    padding:10px 20px; border-radius:999px;
+    background:rgba(20,184,166,0.12);
+    border:1px solid rgba(20,184,166,0.5);
+    transition:background .15s ease, border-color .15s ease, transform .15s ease;
+  }
+  a.hs:hover{background:rgba(20,184,166,0.22); border-color:var(--teal-500); transform:translateY(-1px);}
+  a.hs:focus-visible{outline:2px solid var(--teal-300); outline-offset:3px;}
+  a.hs svg{width:16px; height:16px; flex-shrink:0;}
+
   .hero-note{margin-top:18px; font-size:13.5px; color:var(--ink-faint);}
   .hero-note a{color:var(--indigo-400); text-decoration:none;}
   .hero-note a:hover{color:var(--teal-300);}
@@ -188,6 +208,7 @@
     .support{flex-direction:column; align-items:flex-start;}
     .support a.pp{align-self:stretch; text-align:center;}
     a.top-support{top:14px; right:16px; font-size:13px; padding:6px 12px;}
+    .hero-support{flex-direction:column; gap:10px;}
   }
 </style>
 </head>
@@ -250,6 +271,13 @@
         <path fill="#00F076" d="M16.7 8.8L5.3 2.2c-.7-.4-1.3-.3-1.7.1l9.8 9.7 3.3-3.2z"/>
       </svg>
       <span><span class="small">Jetzt bei</span><span class="big">Google Play</span></span>
+    </a>
+  </div>
+  <div class="hero-support">
+    <span>Gefällt dir der Radar?</span>
+    <a class="hs" href="https://paypal.me/SaschaLanghorst" rel="noopener">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+      Einen Kaffee spendieren
     </a>
   </div>
   <div class="hero-note">
