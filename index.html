@@ -79,7 +79,7 @@
     display:flex; gap:12px; justify-content:center;
     margin-top:34px; flex-wrap:wrap;
   }
-  a.store{
+  .store{
     display:inline-flex; align-items:center; gap:12px;
     text-decoration:none; text-align:left;
     min-width:200px; padding:11px 22px 11px 18px;
@@ -88,11 +88,14 @@
     border:1px solid #fff;
     transition:transform .15s ease, box-shadow .15s ease;
   }
-  a.store:hover{transform:translateY(-1px); box-shadow:0 8px 24px rgba(0,0,0,0.35);}
-  a.store:focus-visible{outline:2px solid var(--teal-300); outline-offset:3px;}
-  a.store svg{width:26px; height:26px; flex-shrink:0;}
-  a.store .small{display:block; font-size:11.5px; line-height:1.2; opacity:0.75;}
-  a.store .big{display:block; font-family:'Space Grotesk', sans-serif; font-size:19px; font-weight:600; line-height:1.15;}
+  .store:hover{transform:translateY(-1px); box-shadow:0 8px 24px rgba(0,0,0,0.35);}
+  /* Vor dem Store-Start: Kacheln ohne Link, leicht zurückgenommen. */
+  .store.soon{cursor:default; opacity:.92;}
+  .store.soon:hover{transform:none; box-shadow:none;}
+  .store:focus-visible{outline:2px solid var(--teal-300); outline-offset:3px;}
+  .store svg{width:26px; height:26px; flex-shrink:0;}
+  .store .small{display:block; font-size:11.5px; line-height:1.2; opacity:0.75;}
+  .store .big{display:block; font-family:'Space Grotesk', sans-serif; font-size:19px; font-weight:600; line-height:1.15;}
 
   /* ── Spenden direkt unter den Store-Buttons ─────── */
   .hero-support{
@@ -189,7 +192,7 @@
   @media (max-width:600px){
     .features{grid-template-columns:1fr;}
     .stores{flex-direction:column; align-items:center;}
-    a.store{width:100%; max-width:280px;}
+    .store{width:100%; max-width:280px;}
     .support{flex-direction:column; align-items:flex-start;}
     .support a.pp{align-self:stretch; text-align:center;}
     .hero-support{flex-direction:column; gap:10px;}
@@ -234,23 +237,27 @@
   </p>
 
   <div class="stores">
-    <!-- 🔴 Nach App-Store-Freigabe: href durch den echten App-Store-Link ersetzen,
-         z. B. https://apps.apple.com/de/app/erlebnisradar/id6796624311 -->
-    <a class="store" href="#" aria-label="ErlebnisRadar im App Store laden">
+    <!-- 🔴 Nach App-Store-Freigabe: <div class="store soon" …> wieder zu
+         <a class="store" href="https://apps.apple.com/de/app/erlebnisradar/id…"
+         aria-label="ErlebnisRadar im App Store laden"> machen und „Bald im“
+         zurück auf „Laden im“ setzen. -->
+    <div class="store soon" role="img" aria-label="ErlebnisRadar bald im App Store">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.6c-.02-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.78-3.32-1.8-1.41-.14-2.76.83-3.47.83-.72 0-1.82-.81-3-.79-1.54.02-2.96.9-3.76 2.27-1.6 2.78-.41 6.9 1.15 9.16.76 1.1 1.67 2.34 2.86 2.3 1.15-.05 1.58-.74 2.97-.74 1.38 0 1.78.74 2.99.72 1.24-.02 2.02-1.12 2.77-2.23.88-1.28 1.24-2.52 1.26-2.59-.03-.01-2.4-.92-2.42-3.67zM14.1 5.86c.63-.77 1.06-1.83.94-2.89-.91.04-2.02.61-2.67 1.37-.58.67-1.1 1.76-.96 2.8 1.02.08 2.06-.52 2.69-1.28z"/></svg>
-      <span><span class="small">Laden im</span><span class="big">App Store</span></span>
-    </a>
-    <!-- 🔴 Nach Play-Store-Freigabe: href durch den echten Play-Store-Link ersetzen:
-         https://play.google.com/store/apps/details?id=de.erlebnisradar.app -->
-    <a class="store" href="#" aria-label="ErlebnisRadar bei Google Play laden">
+      <span><span class="small">Bald im</span><span class="big">App Store</span></span>
+    </div>
+    <!-- 🔴 Nach Play-Store-Freigabe: <div class="store soon" …> wieder zu
+         <a class="store" href="https://play.google.com/store/apps/details?id=de.erlebnisradar.app"
+         aria-label="ErlebnisRadar bei Google Play laden"> machen und „Bald bei“
+         zurück auf „Jetzt bei“ setzen. -->
+    <div class="store soon" role="img" aria-label="ErlebnisRadar bald bei Google Play">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path fill="#00D7FE" d="M3.6 2.3c-.2.2-.3.6-.3 1v17.4c0 .4.1.8.3 1l.1.1 9.7-9.7v-.2L3.7 2.2l-.1.1z"/>
         <path fill="#FFCE00" d="M16.6 15.3l-3.2-3.2v-.2l3.2-3.2.1.1 3.8 2.2c1.1.6 1.1 1.6 0 2.2l-3.8 2.2-.1-.1z"/>
         <path fill="#FF3A44" d="M16.7 15.2l-3.3-3.3-9.8 9.8c.4.4 1 .4 1.7.1l11.4-6.6"/>
         <path fill="#00F076" d="M16.7 8.8L5.3 2.2c-.7-.4-1.3-.3-1.7.1l9.8 9.7 3.3-3.2z"/>
       </svg>
-      <span><span class="small">Jetzt bei</span><span class="big">Google Play</span></span>
-    </a>
+      <span><span class="small">Bald bei</span><span class="big">Google Play</span></span>
+    </div>
   </div>
   <div class="hero-support">
     <span>Gefällt dir der Radar?</span>
@@ -260,8 +267,9 @@
     </a>
   </div>
   <div class="hero-note">
-    Kostenlos · werbefrei · ohne Anmeldung
+    Start in Kürze · kostenlos · werbefrei · ohne Anmeldung
     &nbsp;·&nbsp; <a href="#region">Was ist drin?</a>
+    <br>Nichts verpassen: <a href="https://www.instagram.com/erlebnisradar_app/" rel="noopener">@erlebnisradar_app auf Instagram</a>
   </div>
 </div>
 
@@ -367,8 +375,9 @@
   <div>© 2026 ErlebnisRadar · Kein Tracking auf dieser Seite</div>
   <div class="foot-links">
     <a href="#unterstuetzen">Unterstützen</a>
+    <a href="https://www.instagram.com/erlebnisradar_app/" rel="noopener">Instagram</a>
     <a href="mailto:info@sasuware.de">Kontakt</a>
-    <a href="https://saschalanghorst94.github.io/erlebnisradar-legal/">Impressum &amp; Datenschutz</a>
+    <a href="https://legal.sasuware.de/">Impressum &amp; Datenschutz</a>
   </div>
 </footer>
 
