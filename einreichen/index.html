@@ -78,6 +78,10 @@
   .file{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
   .file img{width:72px; height:72px; object-fit:cover; border-radius:10px; border:1px solid var(--line); display:none;}
   .hp{position:absolute; left:-10000px; width:1px; height:1px; overflow:hidden;}
+  details.terms{margin:6px 0 0 28px; font-size:.9em;}
+  details.terms summary{cursor:pointer; color:inherit; text-decoration:underline;}
+  details.terms ul{margin:6px 0; padding-left:18px;}
+  details.terms .small{font-size:.85em; opacity:.75;}
   button.submit{
     width:100%; font:inherit; font-size:17px; font-weight:700; cursor:pointer;
     padding:15px 20px; border:0; border-radius:14px; background:var(--teal-500); color:#06231f; margin-top:6px;
@@ -267,6 +271,25 @@
       <div class="err">Bitte bestätige die Datenschutzerklärung.</div>
     </div>
 
+    <!-- Bestätigung der Rechte (seit 2026-10-13, gleiche Bedingungen wie in der App) -->
+    <div class="row" id="rightsRow">
+      <label class="check"><input id="rights" type="checkbox">
+        <span>Ich darf Text, Bilder und Flyer veröffentlichen und stimme der Veröffentlichung in ErlebnisRadar zu.</span></label>
+      <details class="terms"><summary>Bedingungen für Einreichungen</summary>
+        <p>Mit dem Einreichen bestätigst du:</p>
+        <ul>
+          <li>Die Angaben sind richtig, und die Veranstaltung ist öffentlich zugänglich.</li>
+          <li>Du hast die Rechte an Text, Bildern und Flyer oder die Erlaubnis der Rechteinhaber, sie zu veröffentlichen.</li>
+          <li>Auf Bildern erkennbare Personen sind mit der Veröffentlichung einverstanden.</li>
+          <li>Du erlaubst ErlebnisRadar kostenlos und nicht ausschließlich, die Angaben und Bilder in der App, auf der Website und in den Kanälen von ErlebnisRadar (z. B. Instagram) zu zeigen und dafür anzupassen, etwa zuzuschneiden.</li>
+          <li>Jede Einreichung wird vor der Veröffentlichung geprüft. Ein Anspruch auf Veröffentlichung besteht nicht; Inhalte können jederzeit entfernt werden.</li>
+          <li>Kontaktdaten werden nicht veröffentlicht und nur für Rückfragen zur Einreichung genutzt.</li>
+        </ul>
+        <p class="small">Fassung vom 13.10.2026 · Fragen an info@sasuware.de</p>
+      </details>
+      <div class="err">Bitte bestätige die Rechte an Text und Bildern.</div>
+    </div>
+
     <button class="submit" id="send" type="submit">Event einreichen</button>
     <div class="formerr" id="formerr"></div>
     <p class="note">Wir prüfen jede Einreichung, bevor sie erscheint – meist innerhalb von 1–2 Tagen.</p>
@@ -387,6 +410,8 @@
     }
     $('consentRow').classList.toggle('invalid', !$('consent').checked);
     if (!$('consent').checked) bad = true;
+    $('rightsRow').classList.toggle('invalid', !$('rights').checked);
+    if (!$('rights').checked) bad = true;
     if ($('image').closest('.row').classList.contains('invalid')) bad = true;
     return !bad;
   }
@@ -418,6 +443,9 @@
       startDate: { timestampValue: d.start.toISOString() },
       endDate: { timestampValue: d.end.toISOString() },
       flyerUrl: str(flyerUrl),
+      // Bestätigung der Rechte; Fassung wie in der App (lib/widgets/submit_terms.dart).
+      rightsConfirmed: { booleanValue: true },
+      termsVersion: str('2026-10-13'),
     };
     // Eine Schreibanfrage mit Server-Zeitstempel für createdAt
     // (die Regel verlangt createdAt == request.time).
