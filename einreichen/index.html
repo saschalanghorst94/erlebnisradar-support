@@ -53,6 +53,8 @@
   .apphint b{color:#fff;}
   .apphint .stores{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;}
   .soon{font-size:12px; padding:4px 10px; border-radius:8px; background:#fff; color:#0d0b2e; font-weight:600;}
+  /* ✅ NEU (2026-10-14): App Store freigegeben – Link statt „Bald“-Kachel. */
+  a.soon{text-decoration:none; background:var(--teal-500); color:#042f2a;}
 
   /* Formular */
   form{margin-top:26px;}
@@ -124,7 +126,7 @@
 
   <div class="apphint">
     <div class="txt"><b>Noch schneller mit der App:</b> In ErlebnisRadar unter Einstellungen → „Event einreichen“ – und du siehst gleich, was sonst so los ist.
-      <div class="stores"><span class="soon">Bald im App Store</span><span class="soon">Bald bei Google Play</span></div>
+      <div class="stores"><a class="soon" href="https://apps.apple.com/de/app/erlebnisradar/id6796624311" rel="noopener">Im App Store laden</a><span class="soon">Bald bei Google Play</span></div>
     </div>
   </div>
 
@@ -302,8 +304,8 @@
   <p>Wir schauen es uns an und schalten es nach der Prüfung frei.</p>
   <div class="apphint" style="text-align:left">
     <div class="txt"><b>Hol dir ErlebnisRadar aufs Handy:</b> Dann siehst du dein Event – und alles andere, was in deiner Nähe los ist.
-      <div class="stores"><span class="soon">Bald im App Store</span><span class="soon">Bald bei Google Play</span></div>
-      <div style="margin-top:8px">Bis dahin: <a href="https://www.instagram.com/erlebnisradar_app/" rel="noopener">@erlebnisradar_app auf Instagram</a></div>
+      <div class="stores"><a class="soon" href="https://apps.apple.com/de/app/erlebnisradar/id6796624311" rel="noopener">Im App Store laden</a><span class="soon">Bald bei Google Play</span></div>
+      <div style="margin-top:8px">Neuigkeiten: <a href="https://www.instagram.com/erlebnisradar_app/" rel="noopener">@erlebnisradar_app auf Instagram</a></div>
     </div>
   </div>
   <button class="btn2" id="again" type="button">Weiteres Event einreichen</button>
