@@ -126,7 +126,7 @@
 
   <div class="apphint">
     <div class="txt"><b>Noch schneller mit der App:</b> In ErlebnisRadar unter Einstellungen → „Event einreichen“ – und du siehst gleich, was sonst so los ist.
-      <div class="stores"><a class="soon" href="https://apps.apple.com/de/app/erlebnisradar/id6796624311" rel="noopener">Im App Store laden</a><span class="soon">Bald bei Google Play</span></div>
+      <div class="stores"><a class="soon" data-count="appstore" href="https://apps.apple.com/de/app/erlebnisradar/id6796624311" rel="noopener">Im App Store laden</a><span class="soon">Bald bei Google Play</span></div>
     </div>
   </div>
 
@@ -304,7 +304,7 @@
   <p>Wir schauen es uns an und schalten es nach der Prüfung frei.</p>
   <div class="apphint" style="text-align:left">
     <div class="txt"><b>Hol dir ErlebnisRadar aufs Handy:</b> Dann siehst du dein Event – und alles andere, was in deiner Nähe los ist.
-      <div class="stores"><a class="soon" href="https://apps.apple.com/de/app/erlebnisradar/id6796624311" rel="noopener">Im App Store laden</a><span class="soon">Bald bei Google Play</span></div>
+      <div class="stores"><a class="soon" data-count="appstore" href="https://apps.apple.com/de/app/erlebnisradar/id6796624311" rel="noopener">Im App Store laden</a><span class="soon">Bald bei Google Play</span></div>
       <div style="margin-top:8px">Neuigkeiten: <a href="https://www.instagram.com/erlebnisradar_app/" rel="noopener">@erlebnisradar_app auf Instagram</a></div>
     </div>
   </div>
@@ -544,6 +544,27 @@
   }
 
   $('again').addEventListener('click', () => location.reload());
+})();
+</script>
+<!-- ✅ NEU (2026-10-16): cookieloser Besuchszähler (ErlebnisRadar Stats-Dashboard).
+     Zählt nur Seite, Tag und Klicks auf markierte Links (data-count) –
+     kein Cookie, kein localStorage, keine IP, keine Kennung.
+     Quelle: erlebnis-radar/tools/landing_counter/snippet.html -->
+<script>
+(function () {
+  var URL = "https://europe-west3-erlebnis-radar.cloudfunctions.net/statsHit";
+  function send(payload) {
+    var body = JSON.stringify(payload);
+    try {
+      if (navigator.sendBeacon && navigator.sendBeacon(URL, new Blob([body], { type: "text/plain" }))) return;
+    } catch (e) { /* weiter mit fetch */ }
+    try { fetch(URL, { method: "POST", body: body, keepalive: true, mode: "cors" }); } catch (e) { /* egal */ }
+  }
+  send({ p: location.pathname });
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("[data-count]");
+    if (a) send({ c: a.getAttribute("data-count") });
+  }, true);
 })();
 </script>
 </body>

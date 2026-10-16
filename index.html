@@ -243,7 +243,7 @@
     <!-- ✅ GEÄNDERT (2026-10-14): App Store freigegeben – vorher Kachel
          „Bald im App Store“ ohne Link, jetzt Link auf den deutschen Store
          (/us/ und der Link ohne Land liefern 404, die App ist nur in DE). -->
-    <a class="store" href="https://apps.apple.com/de/app/erlebnisradar/id6796624311"
+    <a class="store" data-count="appstore" href="https://apps.apple.com/de/app/erlebnisradar/id6796624311"
        rel="noopener" aria-label="ErlebnisRadar im App Store laden">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.6c-.02-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.78-3.32-1.8-1.41-.14-2.76.83-3.47.83-.72 0-1.82-.81-3-.79-1.54.02-2.96.9-3.76 2.27-1.6 2.78-.41 6.9 1.15 9.16.76 1.1 1.67 2.34 2.86 2.3 1.15-.05 1.58-.74 2.97-.74 1.38 0 1.78.74 2.99.72 1.24-.02 2.02-1.12 2.77-2.23.88-1.28 1.24-2.52 1.26-2.59-.03-.01-2.4-.92-2.42-3.67zM14.1 5.86c.63-.77 1.06-1.83.94-2.89-.91.04-2.02.61-2.67 1.37-.58.67-1.1 1.76-.96 2.8 1.02.08 2.06-.52 2.69-1.28z"/></svg>
       <span><span class="small">Laden im</span><span class="big">App Store</span></span>
@@ -272,7 +272,7 @@
   <div class="hero-note">
     Jetzt fürs iPhone · Android folgt in Kürze · kostenlos · werbefrei · ohne Anmeldung
     &nbsp;·&nbsp; <a href="#region">Was ist drin?</a>
-    <br>Nichts verpassen: <a href="https://www.instagram.com/erlebnisradar_app/" rel="noopener">@erlebnisradar_app auf Instagram</a>
+    <br>Nichts verpassen: <a data-count="instagram" href="https://www.instagram.com/erlebnisradar_app/" rel="noopener">@erlebnisradar_app auf Instagram</a>
   </div>
 </div>
 
@@ -363,7 +363,7 @@
   <div class="promo">
     <h2>Du veranstaltest selbst etwas?</h2>
     <p>
-      Trag dein Event direkt hier ein – <a href="einreichen/">Event einreichen</a>, ohne App –
+      Trag dein Event direkt hier ein – <a data-count="einreichen" href="einreichen/">Event einreichen</a>, ohne App –
       oder in der App unter Einstellungen → „Event einreichen“. Ein Foto vom Flyer
       reicht als Bild. Die Aufnahme ist kostenlos, nach kurzer Prüfung ist es drin.
     </p>
@@ -378,13 +378,34 @@
   <div>© 2026 ErlebnisRadar · Kein Tracking auf dieser Seite</div>
   <div class="foot-links">
     <a href="#unterstuetzen">Unterstützen</a>
-    <a href="einreichen/">Event einreichen</a>
-    <a href="https://www.instagram.com/erlebnisradar_app/" rel="noopener">Instagram</a>
+    <a data-count="einreichen" href="einreichen/">Event einreichen</a>
+    <a data-count="instagram" href="https://www.instagram.com/erlebnisradar_app/" rel="noopener">Instagram</a>
     <a href="mailto:info@sasuware.de">Kontakt</a>
     <a href="https://legal.sasuware.de/">Impressum &amp; Datenschutz</a>
   </div>
 </footer>
 
 </div>
+<!-- ✅ NEU (2026-10-16): cookieloser Besuchszähler (ErlebnisRadar Stats-Dashboard).
+     Zählt nur Seite, Tag und Klicks auf markierte Links (data-count) –
+     kein Cookie, kein localStorage, keine IP, keine Kennung.
+     Quelle: erlebnis-radar/tools/landing_counter/snippet.html -->
+<script>
+(function () {
+  var URL = "https://europe-west3-erlebnis-radar.cloudfunctions.net/statsHit";
+  function send(payload) {
+    var body = JSON.stringify(payload);
+    try {
+      if (navigator.sendBeacon && navigator.sendBeacon(URL, new Blob([body], { type: "text/plain" }))) return;
+    } catch (e) { /* weiter mit fetch */ }
+    try { fetch(URL, { method: "POST", body: body, keepalive: true, mode: "cors" }); } catch (e) { /* egal */ }
+  }
+  send({ p: location.pathname });
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("[data-count]");
+    if (a) send({ c: a.getAttribute("data-count") });
+  }, true);
+})();
+</script>
 </body>
 </html>
