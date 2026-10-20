@@ -192,7 +192,42 @@
   footer a:hover{color:var(--teal-300);}
   .foot-links{display:flex; gap:18px; flex-wrap:wrap;}
 
+  /* ── Video ──────────────────────────────────────── */
+  /* ✅ NEU (2026-10-20): Werbevideo (erzeugt mit erlebnis-radar/tools/
+     social_posts/werbevideo.mjs). Selbst gehostet, lädt erst beim Antippen
+     (preload="none") – kein Drittanbieter, kein zusätzlicher Ladeaufwand. */
+  .vid-grid{display:flex; align-items:center; gap:44px;}
+  .vid-txt{flex:1;}
+  .vid-txt .lead{margin-bottom:18px;}
+  .vid-list{margin:0; padding:0; list-style:none; color:var(--ink-dim); font-size:14.5px;}
+  .vid-list li{padding:4px 0;}
+  .vid-list li::before{content:"✓"; color:var(--teal-300); font-weight:700; margin-right:10px;}
+  .vid-frame{
+    position:relative; flex-shrink:0; width:280px; aspect-ratio:9/16;
+    border-radius:26px; overflow:hidden; background:var(--indigo-800);
+    border:1px solid rgba(255,255,255,0.16);
+    box-shadow:0 24px 60px rgba(0,0,0,0.45), 0 0 80px rgba(79,70,229,0.25);
+  }
+  .vid-frame video{width:100%; height:100%; display:block; object-fit:cover;}
+  .vid-play{
+    position:absolute; inset:0; width:100%; border:0; cursor:pointer;
+    background:linear-gradient(180deg, transparent 55%, rgba(13,11,46,0.75));
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+    gap:10px; padding-bottom:26px; color:#fff; font:600 14px 'Inter', sans-serif;
+  }
+  .vid-play .btn{
+    width:68px; height:68px; border-radius:50%; background:var(--teal-500);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 28px rgba(20,184,166,0.5); transition:transform .15s ease;
+  }
+  .vid-play:hover .btn{transform:scale(1.06);}
+  .vid-play:focus-visible{outline:2px solid var(--teal-300); outline-offset:-4px;}
+  .vid-play svg{width:26px; height:26px; margin-left:4px;}
+  .vid-play[hidden]{display:none;}
+
   @media (max-width:600px){
+    .vid-grid{flex-direction:column; gap:28px;}
+    .vid-frame{width:min(300px, 100%);}
     .features{grid-template-columns:1fr;}
     .stores{flex-direction:column; align-items:center;}
     .store{width:100%; max-width:280px;}
@@ -275,6 +310,31 @@
     <br>Nichts verpassen: <a data-count="instagram" href="https://www.instagram.com/erlebnisradar_app/" rel="noopener">@erlebnisradar_app auf Instagram</a>
   </div>
 </div>
+
+<section id="video">
+  <div class="vid-grid">
+    <div class="vid-txt">
+      <h2>Die App in 38 Sekunden</h2>
+      <p class="lead">Einmal im Schnelldurchlauf durch alles, was der Radar kann.</p>
+      <ul class="vid-list">
+        <li>Entdecken, was heute in der Nähe los ist</li>
+        <li>Alle Events auf der Karte, Umkreis frei wählbar</li>
+        <li>Wochenend-Planer mit Wetter</li>
+        <li>Suche über alle Veranstaltungen</li>
+        <li>Favoriten mit Erinnerung am Veranstaltungstag</li>
+      </ul>
+    </div>
+    <div class="vid-frame">
+      <video id="promo" src="video/erlebnisradar-video.mp4" poster="video/erlebnisradar-video.jpg"
+             preload="none" playsinline width="720" height="1280"
+             aria-label="Werbevideo: ErlebnisRadar in 38 Sekunden"></video>
+      <button class="vid-play" id="promo-play" type="button" aria-label="Video mit Ton abspielen">
+        <span class="btn"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#06231f" d="M7 4.5v15l13-7.5z"/></svg></span>
+        <span>Abspielen · mit Ton</span>
+      </button>
+    </div>
+  </div>
+</section>
 
 <section id="region">
   <h2>Von Rahden bis Paderborn</h2>
@@ -386,6 +446,22 @@
 </footer>
 
 </div>
+<!-- Video: erst auf Antippen mit Ton starten (Autoplay mit Ton blockieren
+     die Browser), danach normale Steuerelemente; am Ende wieder Startknopf. -->
+<script>
+(function () {
+  var v = document.getElementById("promo"), b = document.getElementById("promo-play");
+  if (!v || !b) return;
+  b.addEventListener("click", function () {
+    b.hidden = true; v.controls = true; v.muted = false;
+    var p = v.play(); if (p && p.catch) p.catch(function () { b.hidden = false; });
+  });
+  v.addEventListener("ended", function () {
+    v.controls = false; v.currentTime = 0; v.load(); b.hidden = false;
+    b.querySelector("span:last-child").textContent = "Nochmal ansehen";
+  });
+})();
+</script>
 <!-- ✅ NEU (2026-10-16): cookieloser Besuchszähler (ErlebnisRadar Stats-Dashboard).
      Zählt nur Seite, Tag und Klicks auf markierte Links (data-count) –
      kein Cookie, kein localStorage, keine IP, keine Kennung.
