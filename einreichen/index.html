@@ -92,11 +92,25 @@
   .formerr{display:none; margin:14px 0 0; padding:12px 14px; border-radius:10px; background:rgba(244,63,94,0.12); border:1px solid rgba(244,63,94,0.4); color:#fecdd3; font-size:14.5px;}
   .note{font-size:13px; color:var(--ink-faint); margin-top:14px;}
   /* ✅ NEU (2026-10-21): mehrere Termine */
-  .dates{list-style:none; margin:0 0 10px; padding:0; display:flex; flex-wrap:wrap; gap:8px;}
-  .dates li{display:flex; align-items:center; gap:4px; padding:6px 6px 6px 12px; border-radius:999px; border:1px solid var(--line); background:var(--field); font-size:14px;}
-  .dates li.first{padding-right:12px; border-color:rgba(20,184,166,0.6);}
-  .dates button{border:0; background:transparent; color:var(--ink-faint); font:inherit; font-size:15px; line-height:1; cursor:pointer; padding:4px 7px; border-radius:50%;}
+  .dates{list-style:none; margin:0 0 10px; padding:0; display:flex; flex-direction:column; gap:8px;}
+  .dates li{display:grid; grid-template-columns:8.6em 1fr auto 34px; align-items:center; gap:8px; padding:8px 8px 8px 12px; border-radius:12px; border:1px solid var(--line); background:var(--field); font-size:14px;}
+  .dates li.first{border-color:rgba(20,184,166,0.6);}
+  .dates li.empty{display:block;}
+  .dates .day{font-weight:600; white-space:nowrap;}
+  .dates input[type=text]{padding:8px 10px; font-size:15px; background:rgba(0,0,0,0.18);}
+  .dates .pic{display:flex; align-items:center; gap:6px; margin:0; font-weight:400; font-size:13px; color:var(--ink-dim); border:1px solid var(--line); border-radius:999px; padding:6px 12px; cursor:pointer; white-space:nowrap;}
+  .dates .pic img{width:24px; height:24px; object-fit:cover; border-radius:5px;}
+  .dates .pic.bad{color:var(--danger); border-color:var(--danger);}
+  .dates .pic input{position:absolute; width:1px; height:1px; opacity:0;}
+  .dates button{border:0; background:transparent; color:var(--ink-faint); font:inherit; font-size:15px; line-height:1; cursor:pointer; padding:6px 8px; border-radius:50%;}
   .dates button:hover{color:#fff; background:rgba(255,255,255,0.08);}
+  @media (max-width:520px){
+    .dates li{grid-template-columns:1fr auto 34px;}
+    .dates .day{grid-column:1 / 2; grid-row:1;}
+    .dates input[type=text]{grid-column:1 / -1; grid-row:2;}
+    .dates .pic{grid-column:2; grid-row:1;}
+    .dates button{grid-column:3; grid-row:1;}
+  }
   .adddate{display:flex; gap:10px;}
   .adddate input{flex:1; min-width:0;}
   .adddate .btn2{margin-top:0; padding:10px 16px; white-space:nowrap;}
@@ -424,10 +438,15 @@
 
   // ✅ NEU (2026-10-21): Mehrere Termine. Erster Termin = Datum oben; dazu
   // die Wiederholung bis zum Enddatum und eigene Zusatztermine, abzüglich
-  // entfernter Termine (z. B. Ferien). Uhrzeit und Dauer gelten für alle.
+  // entfernter Termine (z. B. Ferien). Uhrzeit und Dauer gelten für alle;
+  // Motto (wird an den Namen gehängt) und Bild je Termin optional
+  // (Themenpartys) – ohne eigenes Bild gilt das gemeinsame.
   const MAX_DATES = 26;
+  const MAX_MOTTO = 100;
   const extraDates = new Set();
   const removedDates = new Set();
+  const perDate = new Map();   // Tag → { motto, blob, preview }
+  const dateInfo = (s) => perDate.get(s) || perDate.set(s, { motto: '', blob: null, preview: '' }).get(s);
   const WD = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
   const pad = (n) => String(n).padStart(2, '0');
   const iso = (dt) => `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
@@ -500,14 +519,62 @@
     const dates = allDates();
     if (!sd) {
       const li = document.createElement('li');
+      li.className = 'empty';
       li.textContent = 'Bitte oben zuerst das Datum wählen.';
       list.append(li);
     }
     dates.forEach((s, i) => {
+      const info = dateInfo(s);
       const li = document.createElement('li');
-      li.textContent = fmtDay(s);
       if (i === 0) li.className = 'first';
-      else {
+
+      const day = document.createElement('span');
+      day.className = 'day';
+      day.textContent = fmtDay(s);
+
+      const motto = document.createElement('input');
+      motto.type = 'text';
+      motto.maxLength = MAX_MOTTO;
+      motto.placeholder = 'Motto (optional), z. B. 90er Special';
+      motto.setAttribute('aria-label', `Motto am ${fmtDay(s)}`);
+      motto.value = info.motto;
+      motto.addEventListener('input', () => { info.motto = motto.value; });
+
+      const pic = document.createElement('label');
+      pic.className = 'pic';
+      const file = document.createElement('input');
+      file.type = 'file';
+      file.accept = 'image/*';
+      const picText = document.createElement('span');
+      const showPic = () => {
+        pic.querySelector('img')?.remove();
+        if (info.preview) {
+          const img = document.createElement('img');
+          img.src = info.preview;
+          img.alt = '';
+          pic.prepend(img);
+        }
+        picText.textContent = info.blob ? 'Bild ändern' : 'Eigenes Bild';
+      };
+      file.addEventListener('change', async () => {
+        const f = file.files[0];
+        pic.classList.remove('bad');
+        if (!f) return;
+        try {
+          if (!f.type.startsWith('image/') || f.size > 25 * 1024 * 1024) throw new Error();
+          info.blob = await shrink(f, 2000, 0.85);
+          info.preview = URL.createObjectURL(info.blob);
+          showPic();
+        } catch {
+          pic.classList.add('bad');
+          picText.textContent = 'Kein gültiges Bild';
+        }
+      });
+      pic.append(file, picText);
+      showPic();
+
+      li.append(day, motto, pic);
+      if (i > 0) {
         const b = document.createElement('button');
         b.type = 'button';
         b.textContent = '✕';
@@ -521,7 +588,7 @@
       list.append(li);
     });
     $('dateHelp').textContent = (dates.length ? `${dates.length} ${dates.length === 1 ? 'Termin' : 'Termine'} · ` : '') +
-      'Uhrzeit, Ort, Beschreibung und Bild gelten für alle. Einzelne Termine (z. B. in den Ferien) kannst du mit ✕ entfernen.';
+      'Uhrzeit, Ort und Beschreibung gelten für alle. Motto und eigenes Bild je Termin sind optional – ohne eigenes Bild gilt das Bild weiter unten. Termine (z. B. in den Ferien) entfernst du mit ✕.';
     setDatesErr(dates.length > MAX_DATES ? `Höchstens ${MAX_DATES} Termine pro Einreichung – bitte wähle ein früheres Enddatum.` : '');
   }
 
@@ -634,11 +701,11 @@
     return !bad;
   }
 
-  async function uploadImage() {
-    if (!imageBlob) return '';
-    const name = `Event_uploads/${Date.now()}_web.jpg`;
+  async function uploadImage(blob, suffix = '') {
+    if (!blob) return '';
+    const name = `Event_uploads/${Date.now()}${suffix}_web.jpg`;
     const res = await fetch(`${STORAGE}?uploadType=media&name=${encodeURIComponent(name)}`, {
-      method: 'POST', headers: { 'Content-Type': 'image/jpeg', ...(await appCheckHeaders()) }, body: imageBlob,
+      method: 'POST', headers: { 'Content-Type': 'image/jpeg', ...(await appCheckHeaders()) }, body: blob,
     });
     if (!res.ok) throw new Error('Bild-Upload fehlgeschlagen (' + res.status + ')');
     const meta = await res.json();
@@ -647,7 +714,8 @@
   }
 
   const str = (s) => ({ stringValue: s });
-  async function submitEvent(flyerUrl) {
+  // flyerUrls: Tag → URL des eigenen Bilds (sonst gilt flyerUrl).
+  async function submitEvent(flyerUrl, flyerUrls = {}) {
     const days = allDates();
     const city = val('city');
     const common = {
@@ -670,11 +738,14 @@
     const int = (n) => ({ integerValue: String(n) });
     const writes = days.map((day, i) => {
       const d = buildDates(day);
+      const motto = days.length > 1 ? dateInfo(day).motto.trim() : '';
       const fields = {
         ...common,
         startDate: { timestampValue: d.start.toISOString() },
         endDate: { timestampValue: d.end.toISOString() },
       };
+      if (motto) fields.name = str(`${val('name')} – ${motto}`);
+      if (flyerUrls[day]) fields.flyerUrl = str(flyerUrls[day]);
       if (days.length > 1) Object.assign(fields, { seriesId: str(base), seriesIndex: int(i), seriesCount: int(days.length) });
       const id = days.length > 1 ? `${base}_${i + 1}` : base;
       return {
@@ -709,8 +780,26 @@
     try {
       let flyerUrl = '';
       let imageFailed = false;
-      try { flyerUrl = await uploadImage(); } catch { imageFailed = true; }
-      const count = await submitEvent(flyerUrl);
+      // Eigene Bilder je Termin nacheinander, mit Fortschritt; schlägt eins
+      // fehl, bekommt der Termin das gemeinsame Bild.
+      const days = allDates();
+      const own = days.length > 1 ? days.filter((s) => dateInfo(s).blob) : [];
+      const total = own.length + (imageBlob ? 1 : 0);
+      let n = 0;
+      const progress = () => {
+        if (total > 1) $('send').textContent = `Bild ${++n} von ${total} wird hochgeladen …`;
+      };
+      if (imageBlob) {
+        progress();
+        try { flyerUrl = await uploadImage(imageBlob); } catch { imageFailed = true; }
+      }
+      const flyerUrls = {};
+      for (const [i, s] of own.entries()) {
+        progress();
+        try { flyerUrls[s] = await uploadImage(dateInfo(s).blob, `_${i + 1}`); } catch { imageFailed = true; }
+      }
+      $('send').textContent = 'Wird gesendet …';
+      const count = await submitEvent(flyerUrl, flyerUrls);
       showDone(imageFailed, count);
     } catch (e) {
       $('formerr').textContent = (e && e.message ? e.message : 'Unbekannter Fehler') +
@@ -727,7 +816,7 @@
     $('doneview').style.display = 'block';
     if (imageFailed) {
       const p = document.createElement('p');
-      p.textContent = 'Hinweis: Das Bild konnte nicht hochgeladen werden – das Event ist trotzdem angekommen.';
+      p.textContent = 'Hinweis: Mindestens ein Bild konnte nicht hochgeladen werden – das Event ist trotzdem angekommen.';
       $('doneview').insertBefore(p, $('doneview').querySelector('.apphint'));
     }
     window.scrollTo({ top: 0 });
