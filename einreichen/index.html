@@ -91,6 +91,15 @@
   button.submit:disabled{opacity:.6; cursor:wait;}
   .formerr{display:none; margin:14px 0 0; padding:12px 14px; border-radius:10px; background:rgba(244,63,94,0.12); border:1px solid rgba(244,63,94,0.4); color:#fecdd3; font-size:14.5px;}
   .note{font-size:13px; color:var(--ink-faint); margin-top:14px;}
+  /* ✅ NEU (2026-10-21): mehrere Termine */
+  .dates{list-style:none; margin:0 0 10px; padding:0; display:flex; flex-wrap:wrap; gap:8px;}
+  .dates li{display:flex; align-items:center; gap:4px; padding:6px 6px 6px 12px; border-radius:999px; border:1px solid var(--line); background:var(--field); font-size:14px;}
+  .dates li.first{padding-right:12px; border-color:rgba(20,184,166,0.6);}
+  .dates button{border:0; background:transparent; color:var(--ink-faint); font:inherit; font-size:15px; line-height:1; cursor:pointer; padding:4px 7px; border-radius:50%;}
+  .dates button:hover{color:#fff; background:rgba(255,255,255,0.08);}
+  .adddate{display:flex; gap:10px;}
+  .adddate input{flex:1; min-width:0;}
+  .adddate .btn2{margin-top:0; padding:10px 16px; white-space:nowrap;}
 
   /* Danke */
   .done{display:none; text-align:center; padding:40px 0 10px;}
@@ -204,6 +213,40 @@
         <label for="endTime1">Ende <span class="opt">(optional)</span></label>
         <input id="endTime1" type="time">
         <div class="err">Das Ende muss nach dem Beginn liegen.</div>
+      </div>
+      <!-- ✅ NEU (2026-10-21): Mehrere Termine in einer Einreichung (z. B. jede
+           Party am Freitag). Jeder Termin wird eine eigene Einreichung mit
+           denselben Angaben und demselben Bild; seriesId verbindet sie. -->
+      <div class="row">
+        <label class="check"><input id="repeat" type="checkbox"> Findet an mehreren Terminen statt (z. B. jeden Freitag)</label>
+      </div>
+      <div id="repeatBox" hidden>
+        <div class="two">
+          <div class="row">
+            <label for="repeatRule">Wiederholung</label>
+            <select id="repeatRule">
+              <option value="w1">jede Woche</option>
+              <option value="w2">alle 2 Wochen</option>
+              <option value="m">jeden Monat</option>
+              <option value="">nur einzelne Termine</option>
+            </select>
+          </div>
+          <div class="row" id="repeatUntilRow">
+            <label for="repeatUntil">bis einschließlich</label>
+            <input id="repeatUntil" type="date">
+            <div class="err">Das Enddatum muss nach dem ersten Termin liegen.</div>
+          </div>
+        </div>
+        <div class="row" id="datesRow">
+          <label>Termine</label>
+          <ul class="dates" id="dateList"></ul>
+          <div class="adddate">
+            <input id="extraDate" type="date" aria-label="Weiterer Termin">
+            <button type="button" class="btn2" id="addDate">+ Termin</button>
+          </div>
+          <div class="help" id="dateHelp"></div>
+          <div class="err" id="datesErr"></div>
+        </div>
       </div>
     </fieldset>
 
@@ -379,6 +422,124 @@
     $('endTimeOnly').hidden = on;
   });
 
+  // ✅ NEU (2026-10-21): Mehrere Termine. Erster Termin = Datum oben; dazu
+  // die Wiederholung bis zum Enddatum und eigene Zusatztermine, abzüglich
+  // entfernter Termine (z. B. Ferien). Uhrzeit und Dauer gelten für alle.
+  const MAX_DATES = 26;
+  const extraDates = new Set();
+  const removedDates = new Set();
+  const WD = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+  const pad = (n) => String(n).padStart(2, '0');
+  const iso = (dt) => `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+  const parseDay = (s) => new Date(`${s}T12:00:00`);   // Mittag: keine Effekte der Zeitumstellung
+  const fmtDay = (s) => parseDay(s).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  // n-ter Wochentag im Monat (m darf überlaufen); n = 5 → letzter.
+  function nthWeekday(y, m, wd, n) {
+    if (n >= 5) {
+      const last = new Date(y, m + 1, 0, 12);
+      last.setDate(last.getDate() - ((last.getDay() - wd + 7) % 7));
+      return last;
+    }
+    const dt = new Date(y, m, 1, 12);
+    dt.setDate(1 + ((wd - dt.getDay() + 7) % 7) + (n - 1) * 7);
+    return dt;
+  }
+
+  // Termine nach dem ersten laut Wiederholung (höchstens MAX_DATES + 1,
+  // damit eine Überschreitung erkennbar bleibt).
+  function ruleDates(sd, rule, until) {
+    const out = [];
+    if (!sd || !rule || !until || until <= sd) return out;
+    const first = parseDay(sd), end = parseDay(until);
+    if (rule === 'm') {
+      const wd = first.getDay(), n = Math.ceil(first.getDate() / 7);
+      for (let m = 1; out.length <= MAX_DATES; m++) {
+        const dt = nthWeekday(first.getFullYear(), first.getMonth() + m, wd, n);
+        if (dt > end) break;
+        out.push(iso(dt));
+      }
+    } else {
+      const step = rule === 'w2' ? 14 : 7;
+      const dt = new Date(first);
+      while (out.length <= MAX_DATES) {
+        dt.setDate(dt.getDate() + step);
+        if (dt > end) break;
+        out.push(iso(dt));
+      }
+    }
+    return out;
+  }
+
+  function allDates() {
+    const sd = val('startDate');
+    if (!sd) return [];
+    if (!$('repeat').checked) return [sd];
+    const set = new Set([...ruleDates(sd, $('repeatRule').value, val('repeatUntil')), ...extraDates]);
+    for (const r of removedDates) set.delete(r);
+    return [sd, ...[...set].filter((s) => s > sd).sort()];
+  }
+
+  function setDatesErr(msg) {
+    $('datesErr').textContent = msg;
+    $('datesRow').classList.toggle('invalid', !!msg);
+  }
+
+  function renderDates() {
+    const sd = val('startDate');
+    const opts = $('repeatRule').options;
+    if (sd) {
+      const f = parseDay(sd), wd = WD[f.getDay()], n = Math.ceil(f.getDate() / 7);
+      opts[0].text = `jeden ${wd}`;
+      opts[1].text = `alle 2 Wochen (${wd})`;
+      opts[2].text = n >= 5 ? `jeden letzten ${wd} im Monat` : `jeden ${n}. ${wd} im Monat`;
+    }
+    $('repeatUntilRow').hidden = !$('repeatRule').value;
+    const list = $('dateList');
+    list.textContent = '';
+    const dates = allDates();
+    if (!sd) {
+      const li = document.createElement('li');
+      li.textContent = 'Bitte oben zuerst das Datum wählen.';
+      list.append(li);
+    }
+    dates.forEach((s, i) => {
+      const li = document.createElement('li');
+      li.textContent = fmtDay(s);
+      if (i === 0) li.className = 'first';
+      else {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = '✕';
+        b.setAttribute('aria-label', `${fmtDay(s)} entfernen`);
+        b.addEventListener('click', () => {
+          if (extraDates.has(s)) extraDates.delete(s); else removedDates.add(s);
+          renderDates();
+        });
+        li.append(b);
+      }
+      list.append(li);
+    });
+    $('dateHelp').textContent = (dates.length ? `${dates.length} ${dates.length === 1 ? 'Termin' : 'Termine'} · ` : '') +
+      'Uhrzeit, Ort, Beschreibung und Bild gelten für alle. Einzelne Termine (z. B. in den Ferien) kannst du mit ✕ entfernen.';
+    setDatesErr(dates.length > MAX_DATES ? `Höchstens ${MAX_DATES} Termine pro Einreichung – bitte wähle ein früheres Enddatum.` : '');
+  }
+
+  $('repeat').addEventListener('change', () => {
+    $('repeatBox').hidden = !$('repeat').checked;
+    renderDates();
+  });
+  for (const id of ['startDate', 'repeatRule', 'repeatUntil']) $(id).addEventListener('change', renderDates);
+  $('addDate').addEventListener('click', () => {
+    const s = val('extraDate'), sd = val('startDate');
+    if (!s) return;
+    if (!sd || s <= sd) { setDatesErr('Weitere Termine müssen nach dem ersten Termin (Datum oben) liegen.'); return; }
+    removedDates.delete(s);
+    extraDates.add(s);
+    $('extraDate').value = '';
+    renderDates();
+  });
+
   // Bild: Vorschau + vor dem Hochladen verkleinern (spart Datenvolumen).
   let imageBlob = null;
   $('image').addEventListener('change', async () => {
@@ -424,7 +585,8 @@
 
   // Datum + optionale Uhrzeit wie in der App:
   // nur Beginn → Ende 23:59 am letzten Tag; keine Zeit → ganztägig (00:00).
-  function buildDates() {
+  // day: weiterer Termin – gleiche Uhrzeit und Dauer, auf diesen Tag verschoben.
+  function buildDates(day) {
     const multi = $('multiDay').checked;
     const sd = val('startDate'), st = val('startTime');
     const ed = multi ? val('endDate') : sd;
@@ -434,6 +596,11 @@
     if (et) end = new Date(`${ed}T${et}:00`);
     else if (st) end = new Date(`${ed}T23:59:00`);
     else end = new Date(`${ed}T00:00:00`);
+    if (day && day !== sd) {
+      const shift = Math.round((parseDay(day) - parseDay(sd)) / 864e5);
+      start.setDate(start.getDate() + shift);
+      end.setDate(end.getDate() + shift);
+    }
     return { start, end, multi, sd, ed, st, et };
   }
 
@@ -449,6 +616,16 @@
       if (!d.multi && d.et && d.st && d.et <= d.st) bad = setInvalid('endTime1', true) || bad;
       else setInvalid('endTime1', false);
     }
+    if ($('repeat').checked && val('startDate')) {
+      const ru = val('repeatUntil'), rule = $('repeatRule').value;
+      bad = setInvalid('repeatUntil', !!rule && !!ru && ru <= val('startDate')) || bad;
+      const n = allDates().length;
+      let msg = '';
+      if (n < 2) msg = 'Bitte wähle ein Enddatum für die Wiederholung oder füge weitere Termine hinzu.';
+      else if (n > MAX_DATES) msg = `Höchstens ${MAX_DATES} Termine pro Einreichung – bitte wähle ein früheres Enddatum.`;
+      setDatesErr(msg);
+      if (msg) bad = true;
+    } else setDatesErr('');
     $('consentRow').classList.toggle('invalid', !$('consent').checked);
     if (!$('consent').checked) bad = true;
     $('rightsRow').classList.toggle('invalid', !$('rights').checked);
@@ -471,9 +648,9 @@
 
   const str = (s) => ({ stringValue: s });
   async function submitEvent(flyerUrl) {
-    const d = buildDates();
+    const days = allDates();
     const city = val('city');
-    const fields = {
+    const common = {
       type: str('Event'), status: str('pending'), source: str('user'),
       name: str(val('name')), category: str(val('category')),
       city: str(city), location: str(city), address: str(val('address')),
@@ -481,21 +658,32 @@
       instagram: str(val('instagram')), website: str(val('website')),
       contactName: str(val('contactName')), contactMail: str(val('contactMail')),
       contactPhone: str(val('contactPhone')),
-      startDate: { timestampValue: d.start.toISOString() },
-      endDate: { timestampValue: d.end.toISOString() },
       flyerUrl: str(flyerUrl),
       // Bestätigung der Rechte; Fassung wie in der App (lib/widgets/submit_terms.dart).
       rightsConfirmed: { booleanValue: true },
       termsVersion: str('2026-10-13'),
     };
     // Eine Schreibanfrage mit Server-Zeitstempel für createdAt
-    // (die Regel verlangt createdAt == request.time).
-    const id = 'web_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-    const body = { writes: [{
-      update: { name: `projects/${PROJECT}/databases/(default)/documents/pendingEvents/${id}`, fields },
-      updateTransforms: [{ fieldPath: 'createdAt', setToServerValue: 'REQUEST_TIME' }],
-      currentDocument: { exists: false },
-    }] };
+    // (die Regel verlangt createdAt == request.time). Mehrere Termine:
+    // ein Dokument je Termin, alle in derselben (atomaren) Anfrage.
+    const base = 'web_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    const int = (n) => ({ integerValue: String(n) });
+    const writes = days.map((day, i) => {
+      const d = buildDates(day);
+      const fields = {
+        ...common,
+        startDate: { timestampValue: d.start.toISOString() },
+        endDate: { timestampValue: d.end.toISOString() },
+      };
+      if (days.length > 1) Object.assign(fields, { seriesId: str(base), seriesIndex: int(i), seriesCount: int(days.length) });
+      const id = days.length > 1 ? `${base}_${i + 1}` : base;
+      return {
+        update: { name: `projects/${PROJECT}/databases/(default)/documents/pendingEvents/${id}`, fields },
+        updateTransforms: [{ fieldPath: 'createdAt', setToServerValue: 'REQUEST_TIME' }],
+        currentDocument: { exists: false },
+      };
+    });
+    const body = { writes };
     const res = await fetch(`${FIRESTORE}:commit`, {
       method: 'POST', headers: { 'Content-Type': 'application/json', ...(await appCheckHeaders()) }, body: JSON.stringify(body),
     });
@@ -503,6 +691,7 @@
       const t = await res.text();
       throw new Error(res.status === 403 ? 'Die Angaben wurden abgelehnt – bitte prüfe die Felder (zu lang?).' : 'Fehler beim Senden (' + res.status + ')');
     }
+    return days.length;
   }
 
   $('f').addEventListener('submit', async (ev) => {
@@ -521,8 +710,8 @@
       let flyerUrl = '';
       let imageFailed = false;
       try { flyerUrl = await uploadImage(); } catch { imageFailed = true; }
-      await submitEvent(flyerUrl);
-      showDone(imageFailed);
+      const count = await submitEvent(flyerUrl);
+      showDone(imageFailed, count);
     } catch (e) {
       $('formerr').textContent = (e && e.message ? e.message : 'Unbekannter Fehler') +
         ' Wenn es weiter nicht klappt, schreib mir an info@sasuware.de.';
@@ -532,7 +721,8 @@
     }
   });
 
-  function showDone(imageFailed) {
+  function showDone(imageFailed, count) {
+    if (count > 1) $('doneview').querySelector('h1').textContent = `Danke, deine ${count} Termine sind eingereicht!`;
     $('formview').style.display = 'none';
     $('doneview').style.display = 'block';
     if (imageFailed) {
