@@ -217,7 +217,7 @@
       <div class="row" data-req>
         <label for="address">Adresse *</label>
         <input id="address" type="text" maxlength="300" placeholder="Straße und Hausnummer, ggf. Name der Location">
-        <div class="help">Daraus ermitteln wir die Position auf der Karte.</div>
+        <div class="help">Daraus wird die Position auf der Karte ermittelt.</div>
         <div class="err">Bitte gib die Adresse ein.</div>
       </div>
     </fieldset>
@@ -244,7 +244,7 @@
 
     <fieldset>
       <legend>Kontakt für Rückfragen</legend>
-      <p class="help" style="margin:-4px 0 14px">Wird nicht veröffentlicht – nur falls wir zu deinem Event eine Frage haben.</p>
+      <p class="help" style="margin:-4px 0 14px">Wird nicht veröffentlicht – nur falls ich zu deinem Event eine Frage habe.</p>
       <div class="row">
         <label for="contactName">Name <span class="opt">(optional)</span></label>
         <input id="contactName" type="text" maxlength="200" autocomplete="name">
@@ -294,14 +294,14 @@
 
     <button class="submit" id="send" type="submit">Event einreichen</button>
     <div class="formerr" id="formerr"></div>
-    <p class="note">Wir prüfen jede Einreichung, bevor sie erscheint – meist innerhalb von 1–2 Tagen.</p>
+    <p class="note">Ich prüfe jede Einreichung, bevor sie erscheint – meist innerhalb von 1–2 Tagen.</p>
   </form>
 </section>
 
 <section class="done" id="doneview">
   <div class="ok">✓</div>
   <h1>Danke, dein Event ist eingereicht!</h1>
-  <p>Wir schauen es uns an und schalten es nach der Prüfung frei.</p>
+  <p>Ich schaue es mir an und schalte es nach der Prüfung frei.</p>
   <div class="apphint" style="text-align:left">
     <div class="txt"><b>Hol dir ErlebnisRadar aufs Handy:</b> Dann siehst du dein Event – und alles andere, was in deiner Nähe los ist.
       <div class="stores"><a class="soon" data-count="appstore" href="https://apps.apple.com/de/app/erlebnisradar/id6796624311" rel="noopener">Im App Store laden</a><span class="soon">Bald bei Google Play</span></div>
@@ -312,7 +312,7 @@
 </section>
 
 <footer>
-  <div>© 2026 ErlebnisRadar · Kein Tracking auf dieser Seite</div>
+  <div>© 2026 ErlebnisRadar · Ohne Cookies – Besuche werden nur anonym gezählt</div>
   <div style="display:flex;gap:16px;flex-wrap:wrap">
     <a href="../">Startseite</a>
     <a href="mailto:info@sasuware.de">Kontakt</a>
@@ -525,7 +525,7 @@
       showDone(imageFailed);
     } catch (e) {
       $('formerr').textContent = (e && e.message ? e.message : 'Unbekannter Fehler') +
-        ' Wenn es weiter nicht klappt, schreib uns an info@sasuware.de.';
+        ' Wenn es weiter nicht klappt, schreib mir an info@sasuware.de.';
       $('formerr').style.display = 'block';
     } finally {
       $('send').disabled = false; $('send').textContent = 'Event einreichen';
