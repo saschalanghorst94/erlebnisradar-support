@@ -319,9 +319,13 @@
       </div>
     </fieldset>
 
-    <!-- Lockvogel gegen Bots: für Menschen unsichtbar -->
+    <!-- Lockvogel gegen Bots: für Menschen unsichtbar.
+         ✅ FIX (2026-10-21): vorher „Firma“/id="company" – das Autofill des
+         Browsers füllte das Feld beim Ausfüllen von Name/Mail/Telefon mit
+         (autocomplete="off" wird dabei ignoriert), und echte Einreichungen
+         wurden still als Bot verworfen. Jetzt ohne Begriff, den Autofill erkennt. -->
     <div class="hp" aria-hidden="true">
-      <label for="company">Firma</label><input id="company" type="text" tabindex="-1" autocomplete="off">
+      <label for="hpcheck">Bitte leer lassen</label><input id="hpcheck" type="text" tabindex="-1" autocomplete="off" data-lpignore="true" data-1p-ignore>
     </div>
 
     <div class="row" id="consentRow">
@@ -774,7 +778,7 @@
       return;
     }
     // Bots: Lockvogel ausgefüllt oder zu schnell → still „erfolgreich“.
-    if (val('company') || Date.now() - loadedAt < MIN_FILL_MS) { showDone(); return; }
+    if (val('hpcheck') || Date.now() - loadedAt < MIN_FILL_MS) { showDone(); return; }
 
     $('send').disabled = true; $('send').textContent = 'Wird gesendet …';
     try {
