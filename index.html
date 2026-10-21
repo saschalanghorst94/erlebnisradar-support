@@ -428,7 +428,19 @@
     } catch (e) { /* weiter mit fetch */ }
     try { fetch(URL, { method: "POST", body: body, keepalive: true, mode: "cors" }); } catch (e) { /* egal */ }
   }
-  send({ p: location.pathname });
+  // Herkunft aus eigenen Links (?von=tiktok), danach aus der Adresse
+  // entfernen, damit Neuladen und Weitergeben nicht erneut zählen.
+  var hit = { p: location.pathname };
+  try {
+    var q = new URLSearchParams(location.search);
+    if (q.get("von")) {
+      hit.r = q.get("von").toLowerCase();
+      q.delete("von");
+      var rest = q.toString();
+      history.replaceState(null, "", location.pathname + (rest ? "?" + rest : "") + location.hash);
+    }
+  } catch (e) { /* egal */ }
+  send(hit);
   document.addEventListener("click", function (e) {
     var a = e.target.closest && e.target.closest("[data-count]");
     if (a) send({ c: a.getAttribute("data-count") });
