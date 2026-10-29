@@ -7,6 +7,14 @@
 <meta name="description" content="Alle Veranstaltungen in Ostwestfalen, im Osnabrücker Land und im Mühlenkreis an einem Ort. Konzerte, Feste, Märkte, Partys — mit Karte, Kalender und Umkreissuche. Kostenlos für iPhone und Android." />
 <meta property="og:title" content="ErlebnisRadar – was ist bei dir los?" />
 <meta property="og:description" content="Alle Veranstaltungen deiner Region an einem Ort. Konzerte, Feste, Märkte, Partys. Kostenlos für iPhone und Android." />
+<!-- ✅ NEU (2026-10-29): Vorschaubild für geteilte Links (Facebook, WhatsApp …) –
+     vorher keins, Facebook zeigte dann kein oder ein beliebiges Bild der Seite.
+     Erzeugt mit tools/social_posts/android_start.mjs (og-image.jpg). -->
+<meta property="og:image" content="https://erlebnisradar.sasuware.de/og-image.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="ErlebnisRadar – Was ist bei dir los? App für iPhone und Android" />
+<meta name="twitter:card" content="summary_large_image" />
 <meta property="og:type" content="website" />
 <!-- ✅ NEU (2026-10-14): Smart-App-Banner – Safari auf dem iPhone zeigt oben
      „Laden“ bzw. „Öffnen“ für die App aus dem App Store. -->
@@ -245,19 +253,19 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.6c-.02-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.78-3.32-1.8-1.41-.14-2.76.83-3.47.83-.72 0-1.82-.81-3-.79-1.54.02-2.96.9-3.76 2.27-1.6 2.78-.41 6.9 1.15 9.16.76 1.1 1.67 2.34 2.86 2.3 1.15-.05 1.58-.74 2.97-.74 1.38 0 1.78.74 2.99.72 1.24-.02 2.02-1.12 2.77-2.23.88-1.28 1.24-2.52 1.26-2.59-.03-.01-2.4-.92-2.42-3.67zM14.1 5.86c.63-.77 1.06-1.83.94-2.89-.91.04-2.02.61-2.67 1.37-.58.67-1.1 1.76-.96 2.8 1.02.08 2.06-.52 2.69-1.28z"/></svg>
         <span><span class="small">Laden im</span><span class="big">App Store</span></span>
       </a>
-      <!-- 🔴 Nach Play-Store-Freigabe: <div class="store soon" …> wieder zu
-           <a class="store" href="https://play.google.com/store/apps/details?id=de.erlebnisradar.app"
-           aria-label="ErlebnisRadar bei Google Play laden"> machen und „Bald bei“
-           zurück auf „Jetzt bei“ setzen. -->
-      <div class="store soon" role="img" aria-label="ErlebnisRadar bald bei Google Play">
+      <!-- ✅ GEÄNDERT (2026-10-29): Google Play freigegeben – vorher Kachel
+           „Bald bei Google Play“ ohne Link, jetzt Link in den Play Store;
+           Klicks zählen als „playstore“ (in stats.js erlaubt). -->
+      <a class="store" data-count="playstore" href="https://play.google.com/store/apps/details?id=de.erlebnisradar.app"
+         rel="noopener" aria-label="ErlebnisRadar bei Google Play laden">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path fill="#00D7FE" d="M3.6 2.3c-.2.2-.3.6-.3 1v17.4c0 .4.1.8.3 1l.1.1 9.7-9.7v-.2L3.7 2.2l-.1.1z"/>
           <path fill="#FFCE00" d="M16.6 15.3l-3.2-3.2v-.2l3.2-3.2.1.1 3.8 2.2c1.1.6 1.1 1.6 0 2.2l-3.8 2.2-.1-.1z"/>
           <path fill="#FF3A44" d="M16.7 15.2l-3.3-3.3-9.8 9.8c.4.4 1 .4 1.7.1l11.4-6.6"/>
           <path fill="#00F076" d="M16.7 8.8L5.3 2.2c-.7-.4-1.3-.3-1.7.1l9.8 9.7 3.3-3.2z"/>
         </svg>
-        <span><span class="small">Bald bei</span><span class="big">Google Play</span></span>
-      </div>
+        <span><span class="small">Jetzt bei</span><span class="big">Google Play</span></span>
+      </a>
     </div>
     <ul class="trust">
       <li><b>35.000+</b>Veranstaltungen</li>
