@@ -3,10 +3,17 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ErlebnisRadar – was ist bei dir los?</title>
-<meta name="description" content="Alle Veranstaltungen in Ostwestfalen, im Osnabrücker Land und im Mühlenkreis an einem Ort. Konzerte, Feste, Märkte, Partys — mit Karte, Kalender und Umkreissuche. Kostenlos für iPhone und Android." />
+<!-- ✅ GEÄNDERT (2026-11-11): Titel und Beschreibung mit Region und Nutzen –
+     vorher nur „was ist bei dir los?“ ohne Ort, Suchende tippen aber
+     „Veranstaltungen Minden“, „was ist los Bielefeld“ usw. -->
+<title>ErlebnisRadar – Veranstaltungen in Ostwestfalen &amp; Osnabrücker Land</title>
+<meta name="description" content="Was ist am Wochenende los? Konzerte, Feste, Märkte und Partys von Rahden bis Paderborn – nach Umkreis, Kategorie und Datum. Kostenlose App, werbefrei, ohne Konto." />
+<link rel="canonical" href="https://erlebnisradar.sasuware.de/" />
 <meta property="og:title" content="ErlebnisRadar – was ist bei dir los?" />
-<meta property="og:description" content="Alle Veranstaltungen deiner Region an einem Ort. Konzerte, Feste, Märkte, Partys. Kostenlos für iPhone und Android." />
+<meta property="og:description" content="Konzerte, Feste, Märkte und Partys von Rahden bis Paderborn in einer App. Kostenlos, werbefrei, ohne Konto – für iPhone und Android." />
+<meta property="og:url" content="https://erlebnisradar.sasuware.de/" />
+<meta property="og:site_name" content="ErlebnisRadar" />
+<meta property="og:locale" content="de_DE" />
 <!-- ✅ NEU (2026-10-29): Vorschaubild für geteilte Links (Facebook, WhatsApp …) –
      vorher keins, Facebook zeigte dann kein oder ein beliebiges Bild der Seite.
      Erzeugt mit tools/social_posts/android_start.mjs (og-image.jpg). -->
@@ -19,7 +26,11 @@
 <!-- ✅ NEU (2026-10-14): Smart-App-Banner – Safari auf dem iPhone zeigt oben
      „Laden“ bzw. „Öffnen“ für die App aus dem App Store. -->
 <meta name="apple-itunes-app" content="app-id=6796624311" />
-<link rel="icon" href="data:,">
+<meta name="theme-color" content="#0d0b2e" />
+<!-- ✅ GEÄNDERT (2026-11-11): App-Symbol als Favicon – vorher leeres Icon
+     (data:), Tab und Lesezeichen zeigten nichts. -->
+<link rel="icon" type="image/png" href="app-icon.png">
+<link rel="apple-touch-icon" href="app-icon.png">
 <!-- Schriften liegen selbst gehostet im Ordner fonts/ (SIL Open Font License),
      damit beim Seitenaufruf keine Verbindung zu Google entsteht. -->
 <link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
@@ -52,11 +63,13 @@
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto;} }
   body{
     margin:0;
     background:
       radial-gradient(ellipse 900px 520px at 50% -8%, rgba(79,70,229,0.38), transparent 62%),
       linear-gradient(180deg, var(--indigo-950) 0%, var(--indigo-900) 55%, #0a0824 100%);
+    background-color:var(--indigo-950);
     color:var(--ink);
     font-family:'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     line-height:1.55;
@@ -65,6 +78,15 @@
   .wrap{max-width:1000px; margin:0 auto; padding:0 24px;}
   h1,h2,h3{font-family:'Space Grotesk', sans-serif; font-weight:600; letter-spacing:-0.015em; margin:0; color:#fff;}
   a{color:var(--teal-300);}
+  /* ✅ NEU (2026-11-11): sichtbarer Fokus für alle Links und Knöpfe
+     (Tastatur), vorher nur an Store-Knöpfen und Video-Knopf. */
+  a:focus-visible, button:focus-visible, summary:focus-visible{outline:2px solid var(--teal-300); outline-offset:3px; border-radius:6px;}
+  /* Sprungziele nicht unter der festen Kopfleiste verstecken */
+  [id]{scroll-margin-top:84px;}
+  .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;}
+  .skip{position:absolute; left:12px; top:-60px; z-index:50; background:#fff; color:#0d0b2e;
+    padding:10px 16px; border-radius:10px; font-weight:600; text-decoration:none;}
+  .skip:focus{top:12px;}
 
   /* ── Kopfleiste ─────────────────────────────────── */
   /* ✅ GEÄNDERT (2026-10-20): Startbereich neu (UX-Überarbeitung). Vorher großes
@@ -72,23 +94,44 @@
      erst auf dem zweiten Bildschirm. Jetzt: kleine Kopfleiste mit Name,
      Überschrift + ein Satz + Store-Knöpfe + Belege, daneben die App als
      stummer Loop (Ton auf Tipp). Kaffee-Knopf nur noch unter „Unterstützen“. */
-  .top{display:flex; align-items:center; justify-content:space-between; padding:20px 0;}
+  /* ✅ GEÄNDERT (2026-11-11): Kopfleiste bleibt beim Scrollen oben und trägt
+     „App laden“ als festen Knopf – vorher war nach dem Startbereich kein
+     Download mehr erreichbar, ohne zurückzuscrollen. Dazu Sprunglinks
+     (FAQ, Unterstützen, Event eintragen); auf schmalen Handys nur „App laden“. */
+  .top{position:sticky; top:0; z-index:20;
+    background:rgba(13,11,46,0.88); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+    border-bottom:1px solid transparent;}
+  .top.scrolled{border-bottom-color:var(--line);}
+  .top-in{display:flex; align-items:center; justify-content:space-between; gap:12px; padding-top:14px; padding-bottom:14px;}
   .brand{display:flex; align-items:center; gap:10px; text-decoration:none; color:#fff;
     font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:18px;}
   .brand img{width:34px; height:34px; border-radius:9px;}
-  .top-link{font-size:14px; font-weight:600; text-decoration:none; color:var(--ink-dim);
-    padding:8px 14px; border-radius:999px; border:1px solid var(--line); white-space:nowrap;}
-  .top-link:hover{color:var(--teal-300); border-color:rgba(20,184,166,0.5);}
-  @media (max-width:360px){ .brand{font-size:16px;} .brand img{width:30px; height:30px;} .top-link{padding:7px 11px; font-size:13px;} }
+  .nav{display:flex; align-items:center; gap:6px; margin:0; padding:0; list-style:none;}
+  .nav a{display:inline-block; font-size:14px; font-weight:600; text-decoration:none; color:var(--ink-dim);
+    padding:8px 12px; border-radius:999px; white-space:nowrap;}
+  .nav a:hover{color:var(--teal-300);}
+  .nav a.nav-out{border:1px solid var(--line);}
+  .nav a.nav-out:hover{border-color:rgba(20,184,166,0.5);}
+  .nav a.nav-cta{background:var(--teal-500); color:#06231f; padding:8px 16px; margin-left:4px;}
+  .nav a.nav-cta:hover{color:#06231f; background:var(--teal-300);}
+  @media (max-width:720px){ .nav .nav-jump{display:none;} }
+  @media (max-width:480px){ .nav .nav-opt{display:none;} }
+  @media (max-width:360px){ .brand{font-size:16px;} .brand img{width:30px; height:30px;} .nav a.nav-cta{padding:7px 13px; font-size:13px;} }
 
   /* ── Hero ───────────────────────────────────────── */
-  .hero{display:grid; grid-template-columns:1fr auto; align-items:center; gap:56px; padding:36px 0 64px;}
+  .hero{display:grid; grid-template-columns:1fr auto; align-items:center; gap:56px; padding:30px 0 64px;}
 
-  h1{font-size:clamp(32px, 5vw, 54px); line-height:1.08; text-wrap:balance;}
-  .sub{max-width:470px; margin:18px 0 0; color:var(--ink-dim); font-size:18px; text-wrap:balance;}
+  .eyebrow{margin:0 0 12px; font-size:14.5px; font-weight:600; color:var(--teal-300);}
+  h1{font-size:clamp(30px, 5vw, 54px); line-height:1.08; text-wrap:balance;}
+  .sub{max-width:480px; margin:16px 0 0; color:var(--ink-dim); font-size:18px; text-wrap:balance;}
+
+  /* ✅ NEU (2026-11-11): CTA-Zeile direkt über den Store-Knöpfen – nennt die
+     Hauptaktion und räumt die zwei häufigsten Bedenken aus (Konto, Werbung). */
+  .cta-line{margin:26px 0 0; font-size:15px; font-weight:600; color:#fff;}
+  .cta-line span{color:var(--ink-dim); font-weight:500; white-space:nowrap;}
 
   /* Belege direkt unter den Knöpfen */
-  .trust{display:flex; flex-wrap:wrap; gap:8px 20px; margin:26px 0 0; padding:0; list-style:none;
+  .trust{display:flex; flex-wrap:wrap; gap:8px 20px; margin:22px 0 0; padding:0; list-style:none;
     font-size:14px; color:var(--ink-dim);}
   .trust li{display:flex; align-items:center; gap:8px; white-space:nowrap;}
   .trust li::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--teal-500);}
@@ -97,18 +140,19 @@
   /* ── Store-Buttons ──────────────────────────────── */
   .stores{
     display:flex; gap:12px; justify-content:flex-start;
-    margin-top:30px; flex-wrap:wrap;
+    margin-top:12px; flex-wrap:wrap;
   }
   .store{
     display:inline-flex; align-items:center; gap:12px;
     text-decoration:none; text-align:left;
-    min-width:200px; padding:11px 22px 11px 18px;
+    min-width:200px; min-height:56px; padding:11px 22px 11px 18px;
     border-radius:14px;
     background:#fff; color:#0d0b2e;
     border:1px solid #fff;
+    box-shadow:0 6px 22px rgba(0,0,0,0.28);
     transition:transform .15s ease, box-shadow .15s ease;
   }
-  .store:hover{transform:translateY(-1px); box-shadow:0 8px 24px rgba(0,0,0,0.35);}
+  .store:hover{transform:translateY(-1px); box-shadow:0 10px 28px rgba(0,0,0,0.4);}
   /* Vor dem Store-Start: Kacheln ohne Link, leicht zurückgenommen. */
   .store.soon{cursor:default; opacity:.92;}
   .store.soon:hover{transform:none; box-shadow:none;}
@@ -123,7 +167,7 @@
   .lead{color:var(--ink-dim); font-size:15.5px; max-width:540px; margin:0 0 30px;}
 
   .cats{
-    display:flex; flex-wrap:wrap; gap:9px; margin-bottom:34px;
+    display:flex; flex-wrap:wrap; gap:9px; margin:0 0 34px; padding:0; list-style:none;
   }
   .cat{
     font-size:14px; padding:7px 15px; border-radius:999px;
@@ -142,6 +186,20 @@
   .rs .l{font-size:12.5px; color:var(--ink-faint); margin-top:3px;}
   .places{margin-top:26px; color:var(--ink-dim); font-size:15px;}
 
+  /* ── Download nach dem Funktionsteil ────────────── */
+  /* ✅ NEU (2026-11-11): zweiter Download-Block direkt nach Funktionen und
+     Region – wer bis hier gelesen hat, soll nicht zurückscrollen müssen. */
+  .get{
+    text-align:center;
+    background:radial-gradient(ellipse 520px 220px at 50% 0%, rgba(79,70,229,0.30), transparent 70%), var(--indigo-800);
+    border:1px solid rgba(139,133,240,0.30);
+    border-radius:18px; padding:40px 28px 36px;
+  }
+  .get h2{font-size:clamp(23px, 3.4vw, 30px); text-wrap:balance;}
+  .get p{color:var(--ink-dim); font-size:15.5px; margin:10px auto 0; max-width:480px;}
+  .get .stores{justify-content:center; margin-top:24px;}
+  .get .get-note{margin-top:16px; font-size:13px; color:var(--ink-faint);}
+
   /* ── Veranstalter ───────────────────────────────── */
   .promo{
     background:var(--indigo-800);
@@ -151,6 +209,12 @@
   }
   .promo h2{font-size:20px;}
   .promo p{color:var(--ink-dim); font-size:15px; margin:10px 0 0;}
+  /* ✅ NEU (2026-11-11): Einreichen als eigener Knopf (Sekundär-CTA) –
+     vorher nur ein Link mitten im Absatz. Umriss statt Fläche, damit er
+     nicht mit den Store-Knöpfen konkurriert. */
+  .btn-out{display:inline-block; margin-top:18px; text-decoration:none; font-weight:600; font-size:15px;
+    color:var(--teal-300); border:1.5px solid rgba(127,240,224,0.55); padding:11px 22px; border-radius:999px;}
+  .btn-out:hover{background:rgba(20,184,166,0.12);}
 
   /* ── Unterstützen ───────────────────────────────── */
   .support{
@@ -161,9 +225,14 @@
     display:flex; align-items:center; justify-content:space-between;
     gap:28px; flex-wrap:wrap;
   }
-  .support .txt{max-width:430px;}
+  .support .txt{max-width:520px;}
   .support h2{font-size:21px;}
   .support p{color:var(--ink-dim); font-size:15px; margin:10px 0 0;}
+  .costs{margin:14px 0 0; padding:0; list-style:none; font-size:14.5px; color:var(--ink-dim);}
+  .costs li{display:flex; gap:10px; align-items:baseline; margin-top:6px;}
+  .costs li::before{content:""; flex-shrink:0; width:6px; height:6px; border-radius:50%; background:var(--teal-500); transform:translateY(-2px);}
+  .costs b{color:#fff; font-weight:600;}
+  .support .alt{font-size:14px;}
   .support .pp-wrap{flex-shrink:0; text-align:center;}
   .support a.pp{
     display:inline-block; text-decoration:none;
@@ -172,9 +241,34 @@
     padding:13px 26px; border-radius:999px;
     white-space:nowrap;
   }
+  .support a.pp:hover{background:var(--teal-300);}
   .support .pp-note{
     margin-top:9px; font-size:12.5px; color:var(--ink-faint);
   }
+
+  /* ── FAQ ────────────────────────────────────────── */
+  /* ✅ NEU (2026-11-11): Häufige Fragen als native details/summary –
+     per Tastatur bedienbar, ohne Skript lesbar, Inhalte für Suchmaschinen
+     im HTML. Gruppiert nach Themen, Antworten kurz. */
+  .faq-group{margin-top:34px;}
+  .faq-group h3{font-size:14px; font-family:'Inter', sans-serif; font-weight:600; text-transform:uppercase;
+    letter-spacing:.06em; color:var(--teal-300); margin-bottom:8px;}
+  .faq details{border-bottom:1px solid var(--line);}
+  .faq summary{
+    cursor:pointer; list-style:none; position:relative;
+    padding:15px 40px 15px 0; font-weight:600; font-size:16px; color:#fff;
+  }
+  .faq summary::-webkit-details-marker{display:none;}
+  .faq summary::after{
+    content:""; position:absolute; right:6px; top:50%; width:9px; height:9px;
+    border-right:2px solid var(--ink-dim); border-bottom:2px solid var(--ink-dim);
+    transform:translateY(-70%) rotate(45deg); transition:transform .15s ease;
+  }
+  .faq details[open] summary::after{transform:translateY(-30%) rotate(-135deg);}
+  .faq summary:hover{color:var(--teal-300);}
+  .faq-a{padding:0 8px 18px 0; color:var(--ink-dim); font-size:15px; max-width:680px;}
+  .faq-a p{margin:0;}
+  .faq-a p + p{margin-top:8px;}
 
   footer{
     padding:38px 0 54px; border-top:1px solid var(--line);
@@ -212,7 +306,7 @@
   .vid-sound[hidden]{display:none;}
 
   @media (max-width:820px){
-    .hero{grid-template-columns:1fr; text-align:center; gap:40px; padding-top:20px;}
+    .hero{grid-template-columns:1fr; text-align:center; gap:40px; padding-top:18px;}
     .sub{margin-left:auto; margin-right:auto;}
     .stores, .trust{justify-content:center;}
     .hero-vid{justify-self:center;}
@@ -220,36 +314,59 @@
   }
 
   @media (max-width:600px){
+    .wrap{padding:0 16px;}
+    .top-in{padding-top:10px; padding-bottom:10px;}
+    .sub{font-size:16.5px; margin-top:12px;}
+    .cta-line{margin-top:20px;}
     .features{grid-template-columns:1fr;}
-    .stores{flex-direction:column; align-items:center;}
+    .stores{flex-direction:column; align-items:center; gap:10px;}
     .store{width:100%; max-width:280px;}
-    .support{flex-direction:column; align-items:flex-start;}
-    .support a.pp{align-self:stretch; text-align:center;}
+    .get{padding:32px 18px 28px;}
+    .promo{padding:24px 20px;}
+    .support{flex-direction:column; align-items:flex-start; padding:26px 20px;}
+    .support .pp-wrap{align-self:stretch;}
+    .support a.pp{display:block; text-align:center;}
+    section{padding:48px 0;}
   }
 </style>
 </head>
 <body>
-<div class="wrap">
+<a class="skip" href="#inhalt">Zum Inhalt springen</a>
 
-<header class="top">
-  <a class="brand" href="./"><img src="app-icon.png" alt="" width="34" height="34"><span>ErlebnisRadar</span></a>
-  <a class="top-link" data-count="einreichen" href="einreichen/">Event eintragen</a>
+<header class="top" id="top">
+  <div class="wrap top-in">
+    <a class="brand" href="./"><img src="app-icon.png" alt="" width="34" height="34"><span>ErlebnisRadar</span></a>
+    <nav aria-label="Seitennavigation">
+      <ul class="nav">
+        <li class="nav-jump"><a href="#faq">FAQ</a></li>
+        <li class="nav-jump"><a href="#unterstuetzen">Unterstützen</a></li>
+        <li class="nav-opt"><a class="nav-out" data-count="einreichen" href="einreichen/">Event eintragen</a></li>
+        <!-- Ohne Skript: Sprung zum Download-Block. Mit Skript auf iPhone
+             bzw. Android direkt in den passenden Store (siehe unten). -->
+        <li><a class="nav-cta" id="nav-app" href="#app-laden">App laden</a></li>
+      </ul>
+    </nav>
+  </div>
 </header>
+
+<main id="inhalt" class="wrap">
 
 <div class="hero">
   <div class="hero-txt">
-    <h1>Was ist dieses Wochenende eigentlich los?</h1>
+    <p class="eyebrow">Veranstaltungen in Ostwestfalen und im Osnabrücker Land</p>
+    <h1>Was ist dieses Wochenende bei dir los?</h1>
     <p class="sub">
-      Konzerte, Feste, Märkte und Partys aus deiner Region&nbsp;–
-      alle in einer App, sortiert nach Umkreis.
+      Konzerte, Märkte, Feste und Partys aus deiner Umgebung&nbsp;–
+      in einer App, sortiert nach Umkreis, Kategorie und Datum.
     </p>
 
+    <p class="cta-line">Kostenlos herunterladen <span>– ohne Konto, ohne Werbung</span></p>
     <div class="stores">
       <!-- ✅ GEÄNDERT (2026-10-14): App Store freigegeben – vorher Kachel
            „Bald im App Store“ ohne Link, jetzt Link auf den deutschen Store
            (/us/ und der Link ohne Land liefern 404, die App ist nur in DE). -->
       <a class="store" data-count="appstore" href="https://apps.apple.com/de/app/erlebnisradar/id6796624311"
-         rel="noopener" aria-label="ErlebnisRadar im App Store laden">
+         rel="noopener" aria-label="ErlebnisRadar kostenlos im App Store laden">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.6c-.02-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.78-3.32-1.8-1.41-.14-2.76.83-3.47.83-.72 0-1.82-.81-3-.79-1.54.02-2.96.9-3.76 2.27-1.6 2.78-.41 6.9 1.15 9.16.76 1.1 1.67 2.34 2.86 2.3 1.15-.05 1.58-.74 2.97-.74 1.38 0 1.78.74 2.99.72 1.24-.02 2.02-1.12 2.77-2.23.88-1.28 1.24-2.52 1.26-2.59-.03-.01-2.4-.92-2.42-3.67zM14.1 5.86c.63-.77 1.06-1.83.94-2.89-.91.04-2.02.61-2.67 1.37-.58.67-1.1 1.76-.96 2.8 1.02.08 2.06-.52 2.69-1.28z"/></svg>
         <span><span class="small">Laden im</span><span class="big">App Store</span></span>
       </a>
@@ -257,7 +374,7 @@
            „Bald bei Google Play“ ohne Link, jetzt Link in den Play Store;
            Klicks zählen als „playstore“ (in stats.js erlaubt). -->
       <a class="store" data-count="playstore" href="https://play.google.com/store/apps/details?id=de.erlebnisradar.app"
-         rel="noopener" aria-label="ErlebnisRadar bei Google Play laden">
+         rel="noopener" aria-label="ErlebnisRadar kostenlos bei Google Play laden">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path fill="#00D7FE" d="M3.6 2.3c-.2.2-.3.6-.3 1v17.4c0 .4.1.8.3 1l.1.1 9.7-9.7v-.2L3.7 2.2l-.1.1z"/>
           <path fill="#FFCE00" d="M16.6 15.3l-3.2-3.2v-.2l3.2-3.2.1.1 3.8 2.2c1.1.6 1.1 1.6 0 2.2l-3.8 2.2-.1-.1z"/>
@@ -270,8 +387,7 @@
     <ul class="trust">
       <li><b>35.000+</b>Veranstaltungen</li>
       <li><b>700+</b>Orte</li>
-      <li>kostenlos &amp; werbefrei</li>
-      <li>ohne Anmeldung</li>
+      <li>jede Nacht aktualisiert</li>
     </ul>
   </div>
 
@@ -295,25 +411,25 @@
     sortiert die Treffer automatisch in Kategorien ein.
   </p>
 
-  <div class="cats">
-    <span class="cat">Konzerte</span>
-    <span class="cat">Festivals</span>
-    <span class="cat">Stadtfeste</span>
-    <span class="cat">Märkte</span>
-    <span class="cat">Kultur &amp; Bühne</span>
-    <span class="cat">Kunst &amp; Ausstellungen</span>
-    <span class="cat">Familie</span>
-    <span class="cat">Führungen</span>
-    <span class="cat">Natur &amp; Wandern</span>
-    <span class="cat">Workshops &amp; Vorträge</span>
-    <span class="cat">Sport</span>
-    <span class="cat">Food</span>
-    <span class="cat hot">Party &amp; Nachtleben</span>
-    <span class="cat">Wellness</span>
-    <span class="cat">Kino</span>
-    <span class="cat">Treffen &amp; Gruppen</span>
-    <span class="cat">Schützenfeste</span>
-  </div>
+  <ul class="cats" aria-label="Kategorien">
+    <li class="cat">Konzerte</li>
+    <li class="cat">Festivals</li>
+    <li class="cat">Stadtfeste</li>
+    <li class="cat">Märkte</li>
+    <li class="cat">Kultur &amp; Bühne</li>
+    <li class="cat">Kunst &amp; Ausstellungen</li>
+    <li class="cat">Familie</li>
+    <li class="cat">Führungen</li>
+    <li class="cat">Natur &amp; Wandern</li>
+    <li class="cat">Workshops &amp; Vorträge</li>
+    <li class="cat">Sport</li>
+    <li class="cat">Food</li>
+    <li class="cat hot">Party &amp; Nachtleben</li>
+    <li class="cat">Wellness</li>
+    <li class="cat">Kino</li>
+    <li class="cat">Treffen &amp; Gruppen</li>
+    <li class="cat">Schützenfeste</li>
+  </ul>
 
   <div class="features">
     <div class="feature">
@@ -354,14 +470,76 @@
   </p>
 </section>
 
+<section id="app-laden" aria-labelledby="app-laden-h">
+  <div class="get">
+    <h2 id="app-laden-h">Hol dir den Radar aufs Handy</h2>
+    <p>Ort wählen, Umkreis einstellen, loslegen. Kostenlos, ohne Konto und ohne Werbung.</p>
+    <!-- Gleiche Zählwerte wie oben (appstore/playstore): statsHit nimmt nur
+         die Werte aus ALLOWED_CLICKS an, neue würden still verworfen. -->
+    <div class="stores">
+      <a class="store" data-count="appstore" href="https://apps.apple.com/de/app/erlebnisradar/id6796624311"
+         rel="noopener" aria-label="ErlebnisRadar kostenlos im App Store laden">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.6c-.02-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.78-3.32-1.8-1.41-.14-2.76.83-3.47.83-.72 0-1.82-.81-3-.79-1.54.02-2.96.9-3.76 2.27-1.6 2.78-.41 6.9 1.15 9.16.76 1.1 1.67 2.34 2.86 2.3 1.15-.05 1.58-.74 2.97-.74 1.38 0 1.78.74 2.99.72 1.24-.02 2.02-1.12 2.77-2.23.88-1.28 1.24-2.52 1.26-2.59-.03-.01-2.4-.92-2.42-3.67zM14.1 5.86c.63-.77 1.06-1.83.94-2.89-.91.04-2.02.61-2.67 1.37-.58.67-1.1 1.76-.96 2.8 1.02.08 2.06-.52 2.69-1.28z"/></svg>
+        <span><span class="small">Laden im</span><span class="big">App Store</span></span>
+      </a>
+      <a class="store" data-count="playstore" href="https://play.google.com/store/apps/details?id=de.erlebnisradar.app"
+         rel="noopener" aria-label="ErlebnisRadar kostenlos bei Google Play laden">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="#00D7FE" d="M3.6 2.3c-.2.2-.3.6-.3 1v17.4c0 .4.1.8.3 1l.1.1 9.7-9.7v-.2L3.7 2.2l-.1.1z"/>
+          <path fill="#FFCE00" d="M16.6 15.3l-3.2-3.2v-.2l3.2-3.2.1.1 3.8 2.2c1.1.6 1.1 1.6 0 2.2l-3.8 2.2-.1-.1z"/>
+          <path fill="#FF3A44" d="M16.7 15.2l-3.3-3.3-9.8 9.8c.4.4 1 .4 1.7.1l11.4-6.6"/>
+          <path fill="#00F076" d="M16.7 8.8L5.3 2.2c-.7-.4-1.3-.3-1.7.1l9.8 9.7 3.3-3.2z"/>
+        </svg>
+        <span><span class="small">Jetzt bei</span><span class="big">Google Play</span></span>
+      </a>
+    </div>
+    <p class="get-note">Für iPhone und Android · in den deutschen Stores</p>
+  </div>
+</section>
+
+<section id="veranstalter">
+  <div class="promo">
+    <h2>Du veranstaltest selbst etwas?</h2>
+    <p>
+      Trag dein Event direkt hier ein – ohne App und ohne Konto –
+      oder in der App unter Einstellungen → „Event einreichen“. Ein Foto vom Flyer
+      reicht als Bild. Die Aufnahme ist kostenlos, nach kurzer Prüfung ist es drin.
+    </p>
+    <a class="btn-out" data-count="einreichen" href="einreichen/">Event kostenlos einreichen</a>
+    <p>
+      Clubs und Bars mit festen Partynächten melden sich am besten einmal
+      direkt: <a href="mailto:info@sasuware.de?subject=Location%20bei%20ErlebnisRadar">info@sasuware.de</a>
+    </p>
+  </div>
+</section>
+
+<!-- ✅ GEÄNDERT (2026-11-11): Unterstützen nach Download und Veranstaltern
+     (vorher direkt nach den Funktionen) und konkreter: wofür das Geld geht,
+     dass es freiwillig ist und wie man ohne Geld hilft. Bewusst kein
+     Spendenknopf im Startbereich (konkurriert sonst mit dem Download). -->
 <section id="unterstuetzen">
   <div class="support">
     <div class="txt">
       <h2>Radar am Laufen halten</h2>
       <p>
         Gebaut von einer Person aus Rahden, in der Freizeit. Die App bleibt
-        kostenlos und werbefrei — bezahlt werden trotzdem Datenzugänge, Server
-        und Kartenaufrufe. Wer mag, wirft was in die Kasse.
+        kostenlos und werbefrei – laufende Kosten entstehen trotzdem:
+      </p>
+      <ul class="costs">
+        <li><span><b>Server</b>, die jede Nacht die Veranstaltungen aktualisieren</span></li>
+        <li><span><b>Kartenaufrufe</b>, wenn du Events auf der Karte ansiehst</span></li>
+        <li><span><b>Datenzugänge</b> zu regionalen Veranstaltungsquellen</span></li>
+      </ul>
+      <p>
+        Wer mag, wirft was in die Kasse. Freiwillig – alle Funktionen gibt es
+        für alle, auch ohne Beitrag.
+      </p>
+      <p class="alt">
+        Kein Geld übrig? Eine Bewertung im
+        <a href="https://apps.apple.com/de/app/erlebnisradar/id6796624311" rel="noopener">App Store</a>
+        oder bei
+        <a href="https://play.google.com/store/apps/details?id=de.erlebnisradar.app" rel="noopener">Google Play</a>
+        oder ein Tipp an Freunde hilft auch.
       </p>
     </div>
     <div class="pp-wrap">
@@ -371,24 +549,143 @@
   </div>
 </section>
 
-<section>
-  <div class="promo">
-    <h2>Du veranstaltest selbst etwas?</h2>
-    <p>
-      Trag dein Event direkt hier ein – <a data-count="einreichen" href="einreichen/">Event einreichen</a>, ohne App –
-      oder in der App unter Einstellungen → „Event einreichen“. Ein Foto vom Flyer
-      reicht als Bild. Die Aufnahme ist kostenlos, nach kurzer Prüfung ist es drin.
-    </p>
-    <p>
-      Clubs und Bars mit festen Partynächten melden sich am besten einmal
-      direkt: <a href="mailto:info@sasuware.de?subject=Location%20bei%20ErlebnisRadar">info@sasuware.de</a>
-    </p>
+<section id="faq" class="faq" aria-labelledby="faq-h">
+  <h2 id="faq-h">Häufige Fragen</h2>
+  <p class="lead">Alles Wichtige zur App, zu Veranstaltungen in der Region und zum Eintragen eigener Events.</p>
+
+  <div class="faq-group">
+    <h3>App &amp; Nutzung</h3>
+    <details>
+      <summary>Wo bekomme ich ErlebnisRadar?</summary>
+      <div class="faq-a"><p>Im <a data-count="appstore" href="https://apps.apple.com/de/app/erlebnisradar/id6796624311" rel="noopener">App Store</a> für iPhone und bei <a data-count="playstore" href="https://play.google.com/store/apps/details?id=de.erlebnisradar.app" rel="noopener">Google Play</a> für Android. Die App gibt es in den deutschen Stores.</p></div>
+    </details>
+    <details>
+      <summary>Ist ErlebnisRadar kostenlos?</summary>
+      <div class="faq-a"><p>Ja. Es gibt keine kostenpflichtigen Funktionen, kein Abo und keine Werbung. Die laufenden Kosten trage ich selbst, unterstützt durch freiwillige Beiträge.</p></div>
+    </details>
+    <details>
+      <summary>Brauche ich ein Konto?</summary>
+      <div class="faq-a"><p>Nein. Es gibt keine Registrierung und kein Login. Beim ersten Start wählst du deinen Ort, den Umkreis und, wenn du magst, deine Lieblingsthemen – danach geht es direkt los.</p></div>
+    </details>
+    <details>
+      <summary>Wer steckt hinter ErlebnisRadar?</summary>
+      <div class="faq-a"><p>Eine einzelne Person aus Rahden. Ich entwickle die App in meiner Freizeit. Kontakt: <a href="mailto:info@sasuware.de">info@sasuware.de</a>.</p></div>
+    </details>
+  </div>
+
+  <div class="faq-group">
+    <h3>Veranstaltungen &amp; Aktualität</h3>
+    <details>
+      <summary>Was ist dieses Wochenende in Minden und Umgebung los?</summary>
+      <div class="faq-a"><p>Genau dafür gibt es in der App den Bereich „Wochenende“: Ort wählen, zum Beispiel Minden, Umkreis einstellen – dann siehst du, was am Samstag und Sonntag in der Nähe ansteht, auch mehrtägige Feste, die schon am Freitag begonnen haben. Für heute gibt es den Bereich „Spontan“. Das funktioniert für jeden Ort in der Region.</p></div>
+    </details>
+    <details>
+      <summary>Welche Veranstaltungen finde ich in der App?</summary>
+      <div class="faq-a"><p>Konzerte, Festivals, Stadt- und Schützenfeste, Märkte, Theater und Kultur, Ausstellungen, Familienangebote, Führungen, Wanderungen, Workshops, Sport, Kino, Partys und mehr – sortiert in Kategorien, nach denen du filtern kannst.</p></div>
+    </details>
+    <details>
+      <summary>Woher kommen die Veranstaltungen?</summary>
+      <div class="faq-a"><p>Jede Nacht durchsucht der Radar mehrere regionale Veranstaltungsquellen und ordnet die Termine automatisch Kategorien zu. Dazu kommen Events, die Veranstalter selbst einreichen.</p></div>
+    </details>
+    <details>
+      <summary>Wie aktuell sind die Veranstaltungen?</summary>
+      <div class="faq-a"><p>Die Daten werden jede Nacht automatisch aktualisiert. Vollständig ist kein Veranstaltungskalender, und auch hier kann sich ein Termin kurzfristig ändern. Im Zweifel lohnt ein Blick auf die Seite des Veranstalters, die in der App meist direkt verlinkt ist.</p></div>
+    </details>
+    <details>
+      <summary>Ein Event stimmt nicht oder fällt aus – was kann ich tun?</summary>
+      <div class="faq-a"><p>Tippe in der Detailansicht des Events auf „Event melden“ und wähle zum Beispiel „Falsches Datum“, „Falsche Adresse“ oder „Event existiert nicht mehr“. Ich sehe mir jede Meldung an und korrigiere den Eintrag, wenn nötig.</p></div>
+    </details>
+  </div>
+
+  <div class="faq-group">
+    <h3>Orte, Umkreis &amp; Region</h3>
+    <details>
+      <summary>Wie finde ich Veranstaltungen in Rahden, Lübbecke oder Bielefeld?</summary>
+      <div class="faq-a"><p>Gib den Ort per Name oder Postleitzahl ein oder nutze deinen Standort. Dann stellst du den Umkreis ein, von 5 bis 100 Kilometern. Der Radar zeigt alle Events in diesem Umkreis, egal in welcher Stadt sie stattfinden.</p></div>
+    </details>
+    <details>
+      <summary>Welche Region deckt ErlebnisRadar ab?</summary>
+      <div class="faq-a"><p>Der Schwerpunkt liegt auf Minden-Lübbecke, Herford, Bielefeld, dem Osnabrücker Land, Diepholz, Paderborn und allem dazwischen – über 700 Orte. Je weiter du dich von dieser Region entfernst, desto weniger Veranstaltungen findest du.</p></div>
+    </details>
+    <details>
+      <summary>Muss ich meinen Standort freigeben?</summary>
+      <div class="faq-a"><p>Nein. Du kannst deinen Ort jederzeit per Name oder Postleitzahl wählen. Der Standort ist nur eine Abkürzung, wenn du unterwegs bist.</p></div>
+    </details>
+  </div>
+
+  <div class="faq-group">
+    <h3>Karte, Kalender &amp; Erinnerungen</h3>
+    <details>
+      <summary>Gibt es eine Kartenansicht?</summary>
+      <div class="faq-a"><p>Ja. Auf der Karte siehst du, was rund um dich los ist – praktisch, wenn du heute Abend spontan etwas in der Nähe suchst.</p></div>
+    </details>
+    <details>
+      <summary>Kann ich Events in meinen Kalender übernehmen oder teilen?</summary>
+      <div class="faq-a"><p>Ja. In der Detailansicht eines Events kannst du es in den Kalender deines Handys eintragen oder mit Freunden teilen.</p></div>
+    </details>
+    <details>
+      <summary>Wie funktionieren Favoriten und Erinnerungen?</summary>
+      <div class="faq-a"><p>Interessante Events merkst du dir als Favoriten. Am Veranstaltungstag erinnert dich die App per Mitteilung – vorausgesetzt, du hast Mitteilungen erlaubt.</p></div>
+    </details>
+    <details>
+      <summary>Schickt die App viele Benachrichtigungen?</summary>
+      <div class="faq-a"><p>Nein. Neben Erinnerungen an deine Favoriten gibt es höchstens eine Mitteilung pro Woche mit dem, was in deinen Orten und Lieblingskategorien ansteht – und die nur, wenn du sie möchtest.</p></div>
+    </details>
+  </div>
+
+  <div class="faq-group">
+    <h3>Datenschutz &amp; Werbung</h3>
+    <details>
+      <summary>Zeigt die App Werbung?</summary>
+      <div class="faq-a"><p>Nein. ErlebnisRadar ist werbefrei – keine Banner, keine Werbevideos.</p></div>
+    </details>
+    <details>
+      <summary>Welche Daten erfasst die App?</summary>
+      <div class="faq-a"><p>Für die Nutzung brauchst du weder Namen noch E-Mail-Adresse. Nutzungsstatistiken erfasst die App nur mit deiner Zustimmung, die du in der App jederzeit widerrufen kannst. Was technisch sonst verarbeitet wird, steht in der <a href="https://legal.sasuware.de/#datenschutz">Datenschutzerklärung</a>.</p></div>
+    </details>
+    <details>
+      <summary>Setzt diese Website Cookies?</summary>
+      <div class="faq-a"><p>Nein. Die Seite zählt nur Besuche und Klicks auf einzelne Links – ohne Cookies, ohne gespeicherte IP-Adresse und ohne Kennung.</p></div>
+    </details>
+  </div>
+
+  <div class="faq-group">
+    <h3>Für Veranstalter</h3>
+    <details>
+      <summary>Wie kann ich mein Event kostenlos eintragen?</summary>
+      <div class="faq-a"><p>Über das Formular <a data-count="einreichen" href="einreichen/">Event einreichen</a> – ohne App und ohne Konto – oder in der App unter Einstellungen → „Event einreichen“. Ein Foto vom Flyer reicht als Bild. Wiederkehrende Termine, etwa jede Woche oder einmal im Monat, kannst du in einem Rutsch eintragen. Die Aufnahme ist kostenlos.</p></div>
+    </details>
+    <details>
+      <summary>Wann erscheint mein eingereichtes Event?</summary>
+      <div class="faq-a"><p>Ich prüfe jede Einreichung, bevor sie erscheint – meist innerhalb von 1–2 Tagen. Danach ist das Event für alle in der Region in der App zu finden.</p></div>
+    </details>
+    <details>
+      <summary>Ich betreibe einen Club oder eine Bar mit festen Partynächten – was dann?</summary>
+      <div class="faq-a"><p>Dann schreib mir am besten einmal direkt an <a href="mailto:info@sasuware.de?subject=Location%20bei%20ErlebnisRadar">info@sasuware.de</a>. Ich kläre mit dir, wie deine Termine regelmäßig in die App kommen.</p></div>
+    </details>
+  </div>
+
+  <div class="faq-group">
+    <h3>Unterstützen</h3>
+    <details>
+      <summary>Wie kann ich ErlebnisRadar unterstützen?</summary>
+      <div class="faq-a"><p>Am meisten hilft es, die App weiterzuempfehlen und im Store zu bewerten. Wer möchte, kann außerdem per PayPal einen frei wählbaren Betrag beisteuern – mehr dazu unter <a href="#unterstuetzen">Unterstützen</a>.</p></div>
+    </details>
+    <details>
+      <summary>Wofür wird das Geld verwendet?</summary>
+      <div class="faq-a"><p>Für die laufenden Kosten: Server, Kartenaufrufe und Datenzugänge zu Veranstaltungsquellen. Die App bleibt für alle kostenlos, auch ohne Beitrag. Eine Spendenquittung kann ich nicht ausstellen, weil ErlebnisRadar kein gemeinnütziger Verein ist.</p></div>
+    </details>
   </div>
 </section>
 
+</main>
+
+<div class="wrap">
 <footer>
   <div>© 2026 ErlebnisRadar · Ohne Cookies – Besuche werden nur anonym gezählt</div>
   <div class="foot-links">
+    <a href="#app-laden">App laden</a>
+    <a href="#faq">FAQ</a>
     <a href="#unterstuetzen">Unterstützen</a>
     <a data-count="einreichen" href="einreichen/">Event einreichen</a>
     <a data-count="instagram" href="https://www.instagram.com/erlebnisradar_app/" rel="noopener">Instagram</a>
@@ -397,7 +694,6 @@
     <a href="https://legal.sasuware.de/">Impressum &amp; Datenschutz</a>
   </div>
 </footer>
-
 </div>
 <!-- Video: stummer Loop im Startbereich; der Knopf spielt das ganze
      Werbevideo mit Ton (Autoplay mit Ton blockieren die Browser), danach
@@ -421,6 +717,58 @@
     v.poster = "video/erlebnisradar-loop.jpg"; v.src = LOOP; v.play();
     b.querySelector("span").textContent = "Nochmal mit Ton"; b.hidden = false;
   });
+})();
+</script>
+<!-- ✅ NEU (2026-11-11): „App laden“ in der Kopfleiste führt auf iPhone/iPad
+     bzw. Android direkt in den passenden Store (ein Tipp statt zwei) und
+     zählt dann wie die Store-Knöpfe als appstore/playstore. Auf dem Desktop
+     oder ohne Skript bleibt es ein Sprung zum Download-Block. Dazu ein
+     Trennstrich unter der Kopfleiste, sobald gescrollt wird. -->
+<script>
+(function () {
+  var a = document.getElementById("nav-app");
+  if (a) {
+    var ua = navigator.userAgent || "";
+    var ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    if (/Android/i.test(ua)) {
+      a.href = "https://play.google.com/store/apps/details?id=de.erlebnisradar.app";
+      a.setAttribute("data-count", "playstore"); a.rel = "noopener";
+    } else if (ios) {
+      a.href = "https://apps.apple.com/de/app/erlebnisradar/id6796624311";
+      a.setAttribute("data-count", "appstore"); a.rel = "noopener";
+    }
+  }
+  var top = document.getElementById("top");
+  if (top) {
+    var onScroll = function () { top.classList.toggle("scrolled", window.scrollY > 8); };
+    window.addEventListener("scroll", onScroll, { passive: true }); onScroll();
+  }
+})();
+</script>
+<!-- ✅ NEU (2026-11-11): FAQPage-Daten (JSON-LD) werden aus den sichtbaren
+     Fragen oben erzeugt – so sind sie immer wortgleich mit der Seite und
+     müssen bei Textänderungen nicht doppelt gepflegt werden. Google liest
+     per Skript eingefügtes JSON-LD; ein FAQ-Suchergebnis ist damit nicht
+     garantiert (zeigt Google seit 2023 nur noch für wenige Seiten). -->
+<script>
+(function () {
+  try {
+    var items = [];
+    document.querySelectorAll("#faq details").forEach(function (d) {
+      var q = d.querySelector("summary"), a = d.querySelector(".faq-a");
+      if (!q || !a) return;
+      items.push({
+        "@type": "Question",
+        "name": q.textContent.replace(/\s+/g, " ").trim(),
+        "acceptedAnswer": { "@type": "Answer", "text": a.textContent.replace(/\s+/g, " ").trim() }
+      });
+    });
+    if (!items.length) return;
+    var s = document.createElement("script");
+    s.type = "application/ld+json";
+    s.textContent = JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", "mainEntity": items });
+    document.head.appendChild(s);
+  } catch (e) { /* egal */ }
 })();
 </script>
 <!-- ✅ NEU (2026-10-16): cookieloser Besuchszähler (ErlebnisRadar Stats-Dashboard).
